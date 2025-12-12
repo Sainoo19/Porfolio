@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+    <defs>
+        <linearGradient id="grad" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9" />
+            <stop offset="100%" stop-color="#9ca3af" stop-opacity="0.8" />
+        </linearGradient>
+    </defs>
+    <rect width="200" height="200" fill="#0b0b0d" rx="16"/>
+    <g opacity="0.55">
+        <rect x="26" y="26" width="148" height="148" fill="#1f1f25" rx="12"/>
+        <rect x="42" y="42" width="116" height="116" fill="#17171d" rx="10"/>
+    </g>
+    <path d="M60 120 V70 L100 95 V145 Z" fill="url(#grad)" opacity="0.85"/>
+    <path d="M100 95 L140 70 V120 L100 145 Z" fill="url(#grad)" opacity="0.95"/>
+    <path d="M78 115 L100 100 L122 115 L100 130 Z" fill="#d1d5db" opacity="0.9"/>
+    <text x="50%" y="180" fill="#e5e7eb" font-family="Arial, sans-serif" font-size="18" font-weight="700" text-anchor="middle">Learning Chain</text>
+</svg>

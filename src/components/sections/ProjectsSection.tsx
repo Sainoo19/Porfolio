@@ -4,9 +4,9 @@
  */
 
 import { useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { ExternalLink, Github, Users, Calendar, Folder } from 'lucide-react';
-import { SectionTitle, GlassCard, TechBadge, Button } from '../ui';
+import { SectionTitle, TechBadge, Button } from '../ui';
 import { PROJECTS } from '../../constants';
 import { SCALE_VARIANTS, STAGGER_CONTAINER_VARIANTS } from '../../constants';
 import type { Project } from '../../types';

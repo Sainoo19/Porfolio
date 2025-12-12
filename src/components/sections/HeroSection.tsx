@@ -4,10 +4,10 @@
  */
 
 import { useEffect, useState } from 'react';
-import { motion, useAnimation } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { ChevronDown, Github, Linkedin, Mail, MapPin, Sparkles, FileText } from 'lucide-react';
 import { HeroScene } from '../three';
-import { TypewriterText, GradientText } from '../ui';
+import { TypewriterText } from '../ui';
 import { Button } from '../ui';
 import { PERSONAL_INFO } from '../../constants';
 import { FADE_IN_VARIANTS, SLIDE_UP_VARIANTS, STAGGER_CONTAINER_VARIANTS } from '../../constants';
@@ -33,25 +33,11 @@ const letterVariants = {
     }),
 };
 
-// Glowing text animation
-const glowVariants = {
-    animate: {
-        textShadow: [
-            '0 0 20px rgba(99, 102, 241, 0.5)',
-            '0 0 40px rgba(99, 102, 241, 0.8)',
-            '0 0 60px rgba(168, 85, 247, 0.6)',
-            '0 0 40px rgba(99, 102, 241, 0.8)',
-            '0 0 20px rgba(99, 102, 241, 0.5)',
-        ],
-    },
-};
-
 /**
  * Hero section with 3D scene and animated content
  */
 export function HeroSection() {
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-    const controls = useAnimation();
 
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {

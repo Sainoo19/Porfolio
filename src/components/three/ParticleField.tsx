@@ -26,9 +26,8 @@ export function ParticleField({
     const pointsRef = useRef<THREE.Points>(null);
 
     // Generate particle positions
-    const { positions, velocities } = useMemo(() => {
+    const positions = useMemo(() => {
         const positions = new Float32Array(count * 3);
-        const velocities = new Float32Array(count * 3);
 
         for (let i = 0; i < count; i++) {
             const i3 = i * 3;
@@ -41,14 +40,9 @@ export function ParticleField({
             positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
             positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
             positions[i3 + 2] = radius * Math.cos(phi);
-
-            // Random velocities
-            velocities[i3] = (Math.random() - 0.5) * 0.02;
-            velocities[i3 + 1] = (Math.random() - 0.5) * 0.02;
-            velocities[i3 + 2] = (Math.random() - 0.5) * 0.02;
         }
 
-        return { positions, velocities };
+        return positions;
     }, [count]);
 
     // Animation loop

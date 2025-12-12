@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 import { Send, Mail, Phone, MapPin, Github, Linkedin, CheckCircle, Loader2 } from 'lucide-react';
 import { SectionTitle, Button, GlassCard } from '../ui';
 import { PERSONAL_INFO } from '../../constants';
-import { SLIDE_UP_VARIANTS, SLIDE_LEFT_VARIANTS, SLIDE_RIGHT_VARIANTS, STAGGER_CONTAINER_VARIANTS } from '../../constants';
+import { SLIDE_LEFT_VARIANTS, SLIDE_RIGHT_VARIANTS, STAGGER_CONTAINER_VARIANTS } from '../../constants';
 
 interface FormData {
     name: string;

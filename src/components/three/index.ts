@@ -8,3 +8,4 @@ export { FloatingGeometry } from './FloatingGeometry';
 export { GlowingSphere } from './GlowingSphere';
 export { HeroScene } from './HeroScene';
 export { MouseParticles } from './MouseParticles';
+export { PilotHUDBackground } from './PilotHUDBackground';

@@ -1,6 +1,6 @@
 /**
- * @fileoverview Tech Badge Component
- * @description Badge for displaying technology/skill tags
+ * @fileoverview Tech Badge Component - Mecha HUD Module Tag
+ * @description Badge for displaying technology/skill tags with HUD styling
  */
 
 import { motion } from 'framer-motion';
@@ -13,19 +13,19 @@ interface TechBadgeProps {
 }
 
 const VARIANT_STYLES = {
-    default: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
-    outline: 'bg-transparent border-white/20 text-gray-300 hover:border-indigo-500/50 hover:text-indigo-300',
-    glow: 'bg-indigo-500/10 text-indigo-300 border-indigo-500/50 shadow-lg shadow-indigo-500/20',
+    default: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30',
+    outline: 'bg-transparent border-cyan-500/20 text-gray-400 hover:border-cyan-500/50 hover:text-cyan-300',
+    glow: 'bg-cyan-500/10 text-cyan-300 border-cyan-500/50 shadow-lg shadow-cyan-500/20',
 } as const;
 
 const SIZE_STYLES = {
-    sm: 'px-2 py-0.5 text-xs',
-    md: 'px-3 py-1 text-sm',
-    lg: 'px-4 py-1.5 text-base',
+    sm: 'px-2 py-0.5 text-[10px]',
+    md: 'px-3 py-1 text-xs',
+    lg: 'px-4 py-1.5 text-sm',
 } as const;
 
 /**
- * Tech badge component with hover effects
+ * Tech badge component - HUD Module Tag
  */
 export function TechBadge({
     name,
@@ -35,10 +35,13 @@ export function TechBadge({
 }: TechBadgeProps) {
     return (
         <motion.span
-            whileHover={{ scale: 1.05, y: -2 }}
+            whileHover={{ scale: 1.05, y: -1 }}
             whileTap={{ scale: 0.95 }}
+            style={{
+                clipPath: 'polygon(4px 0, 100% 0, calc(100% - 4px) 100%, 0 100%)'
+            }}
             className={`
-        inline-flex items-center gap-1.5 rounded-full border font-medium
+        inline-flex items-center gap-1.5 border font-mono uppercase tracking-wider
         transition-all duration-300 cursor-default
         ${VARIANT_STYLES[variant]}
         ${SIZE_STYLES[size]}
@@ -51,7 +54,7 @@ export function TechBadge({
 }
 
 /**
- * Animated tech stack display
+ * Animated tech stack display - Module Array
  */
 export function TechStack({ technologies }: { technologies: string[] }) {
     return (

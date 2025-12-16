@@ -4,7 +4,7 @@
  */
 
 import { Layout } from './components/layout/Layout';
-import { LoadingScreen } from './components/ui';
+import { LoadingScreen, HUDOverlay } from './components/ui';
 import {
     HeroSection,
     AboutSection,
@@ -19,6 +19,9 @@ function App() {
         <>
             {/* Loading screen on initial load */}
             <LoadingScreen />
+
+            {/* HUD Overlay - Pilot helmet effect */}
+            <HUDOverlay />
 
             <Layout>
                 <HeroSection />

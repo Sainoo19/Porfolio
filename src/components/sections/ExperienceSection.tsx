@@ -1,6 +1,6 @@
 /**
- * @fileoverview Experience Section Component
- * @description Work experience timeline with animations and 3D effects
+ * @fileoverview Experience Section Component - Mecha HUD Mission Log
+ * @description Work experience as pilot mission history with HUD styling
  */
 
 import { useState, useRef } from 'react';
@@ -10,9 +10,9 @@ import { EXPERIENCES } from '../../constants';
 import { SLIDE_UP_VARIANTS } from '../../constants';
 
 /**
- * 3D Stat Card Component
+ * 3D Stat Card Component - HUD Data Panel
  */
-function StatCard({ stat, index }: { stat: { value: string; label: string }; index: number }) {
+function StatCard({ stat, index }: { stat: { value: string; label: string; code: string }; index: number }) {
     const cardRef = useRef<HTMLDivElement>(null);
     const [rotateX, setRotateX] = useState(0);
     const [rotateY, setRotateY] = useState(0);
@@ -53,14 +53,34 @@ function StatCard({ stat, index }: { stat: { value: string; label: string }; ind
             style={{
                 transformStyle: 'preserve-3d',
                 perspective: '1000px',
+                clipPath: 'polygon(0 10px, 10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px))'
             }}
-            className="relative text-center p-6 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm border border-white/10 rounded-xl overflow-hidden cursor-pointer group"
+            className="relative text-center p-6 bg-gradient-to-br from-cyan-950/40 to-slate-950/60 backdrop-blur-sm border border-cyan-500/20 overflow-hidden cursor-pointer group hover:border-cyan-500/50 transition-all"
         >
+            {/* Corner brackets */}
+            <svg className="absolute top-1 left-1 w-4 h-4 text-cyan-500/40 group-hover:text-cyan-400 transition-colors">
+                <path d="M0 12 L0 0 L12 0" stroke="currentColor" strokeWidth="1" fill="none" />
+            </svg>
+            <svg className="absolute top-1 right-1 w-4 h-4 text-cyan-500/40 group-hover:text-cyan-400 transition-colors">
+                <path d="M12 12 L12 0 L0 0" stroke="currentColor" strokeWidth="1" fill="none" />
+            </svg>
+            <svg className="absolute bottom-1 left-1 w-4 h-4 text-cyan-500/40 group-hover:text-cyan-400 transition-colors">
+                <path d="M0 0 L0 12 L12 12" stroke="currentColor" strokeWidth="1" fill="none" />
+            </svg>
+            <svg className="absolute bottom-1 right-1 w-4 h-4 text-cyan-500/40 group-hover:text-cyan-400 transition-colors">
+                <path d="M12 0 L12 12 L0 12" stroke="currentColor" strokeWidth="1" fill="none" />
+            </svg>
+
+            {/* Scan line effect */}
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 overflow-hidden pointer-events-none">
+                <div className="absolute inset-0 bg-gradient-to-b from-cyan-500/5 via-transparent to-transparent animate-scan-line" />
+            </div>
+
             {/* Glow effect */}
             <motion.div
                 className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                 style={{
-                    background: 'radial-gradient(circle at center, rgba(99, 102, 241, 0.15), transparent 70%)',
+                    background: 'radial-gradient(circle at center, rgba(34, 211, 238, 0.15), transparent 70%)',
                 }}
             />
 
@@ -68,15 +88,18 @@ function StatCard({ stat, index }: { stat: { value: string; label: string }; ind
             {isHovered && (
                 <motion.div
                     initial={{ x: '-100%', opacity: 0 }}
-                    animate={{ x: '200%', opacity: 0.4 }}
+                    animate={{ x: '200%', opacity: 0.3 }}
                     transition={{ duration: 0.5, ease: 'easeInOut' }}
-                    className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none"
+                    className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-cyan-400/20 to-transparent pointer-events-none"
                     style={{ transform: 'skewX(-20deg)' }}
                 />
             )}
 
+            {/* Data code */}
+            <div className="relative z-10 text-[9px] font-mono text-cyan-600 mb-2">{stat.code}</div>
+
             <motion.div
-                className="relative z-10 text-3xl md:text-4xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent"
+                className="relative z-10 text-3xl md:text-4xl font-['Orbitron'] font-bold text-cyan-400"
                 animate={{
                     scale: isHovered ? 1.1 : 1,
                 }}
@@ -84,17 +107,17 @@ function StatCard({ stat, index }: { stat: { value: string; label: string }; ind
             >
                 {stat.value}
             </motion.div>
-            <div className="relative z-10 text-gray-400 text-sm mt-2 group-hover:text-gray-300 transition-colors">
+            <div className="relative z-10 text-gray-400 text-xs font-mono mt-2 group-hover:text-cyan-300 transition-colors uppercase tracking-wider">
                 {stat.label}
             </div>
 
             {/* Border glow on hover */}
             <motion.div
-                className="absolute inset-0 rounded-xl pointer-events-none"
+                className="absolute inset-0 pointer-events-none"
                 animate={{
                     boxShadow: isHovered
-                        ? 'inset 0 0 0 1px rgba(99, 102, 241, 0.5), 0 0 20px rgba(99, 102, 241, 0.2)'
-                        : 'inset 0 0 0 1px rgba(255, 255, 255, 0.1), 0 0 0px rgba(99, 102, 241, 0)'
+                        ? 'inset 0 0 0 1px rgba(34, 211, 238, 0.5), 0 0 20px rgba(34, 211, 238, 0.2)'
+                        : 'inset 0 0 0 1px rgba(34, 211, 238, 0.1), 0 0 0px rgba(34, 211, 238, 0)'
                 }}
             />
         </motion.div>
@@ -102,7 +125,7 @@ function StatCard({ stat, index }: { stat: { value: string; label: string }; ind
 }
 
 /**
- * Experience section with animated timeline
+ * Experience section - Pilot Mission Log
  */
 export function ExperienceSection() {
     const timelineItems = EXPERIENCES.map((exp) => ({
@@ -117,25 +140,36 @@ export function ExperienceSection() {
     }));
 
     const stats = [
-        { value: '2+', label: 'Years Experience' },
-        { value: '3+', label: 'Companies' },
-        { value: '5+', label: 'Projects' },
-        { value: '10+', label: 'Team Members Led' },
+        { value: '2+', label: 'Years Active', code: 'TIME_LOGGED' },
+        { value: '3+', label: 'Stations', code: 'DEPLOY_COUNT' },
+        { value: '5+', label: 'Missions', code: 'OPS_COMPLETE' },
+        { value: '10+', label: 'Crew Led', code: 'TEAM_SIZE' },
     ];
 
     return (
         <section id="experience" className="relative py-24 md:py-32 overflow-hidden">
+            {/* HUD Background grid */}
+            <div className="absolute inset-0 bg-hud-grid opacity-20" />
+
             {/* Background decorations */}
-            <div className="absolute top-1/3 -left-48 w-96 h-96 bg-indigo-500/10 rounded-full blur-[100px]" />
-            <div className="absolute bottom-1/3 -right-48 w-96 h-96 bg-purple-500/10 rounded-full blur-[100px]" />
+            <div className="absolute top-1/3 -left-48 w-96 h-96 bg-cyan-500/10 rounded-full blur-[100px]" />
+            <div className="absolute bottom-1/3 -right-48 w-96 h-96 bg-magenta-500/10 rounded-full blur-[100px]" />
 
             <div className="relative max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-12">
-                <SectionTitle
-                    title="Experience"
-                    subtitle="My professional journey and the roles I've taken on"
-                />
+                {/* Section Header */}
+                <div className="text-center mb-8">
+                    <div className="inline-flex items-center gap-2 text-[10px] font-mono text-cyan-500 mb-2">
+                        <span className="text-gray-600">[</span>
+                        MISSION_LOG
+                        <span className="text-gray-600">]</span>
+                    </div>
+                    <SectionTitle
+                        title="Mission History"
+                        subtitle="Deployment record and operational experience"
+                    />
+                </div>
 
-                {/* Stats row with 3D cards */}
+                {/* Stats row - HUD Data Panels */}
                 <motion.div
                     variants={SLIDE_UP_VARIANTS}
                     initial="hidden"
@@ -148,10 +182,21 @@ export function ExperienceSection() {
                     ))}
                 </motion.div>
 
-                {/* Timeline */}
-                <Timeline items={timelineItems} />
+                {/* Timeline - Mission Log */}
+                <div className="relative">
+                    {/* Timeline header */}
+                    <div className="flex items-center justify-between mb-6 pb-4 border-b border-cyan-500/20">
+                        <span className="text-[10px] font-mono text-cyan-600 uppercase tracking-wider">
+                            &lt; CHRONOLOGICAL_RECORD &gt;
+                        </span>
+                        <span className="text-[10px] font-mono text-gray-600">
+                            ENTRIES: {EXPERIENCES.length}
+                        </span>
+                    </div>
+                    <Timeline items={timelineItems} />
+                </div>
 
-                {/* Additional note */}
+                {/* Current status indicator */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -159,19 +204,27 @@ export function ExperienceSection() {
                     className="mt-16 text-center"
                 >
                     <motion.div
-                        className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 rounded-full"
+                        className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-cyan-500/10 to-magenta-500/10 border border-cyan-500/30"
+                        style={{
+                            clipPath: 'polygon(12px 0, calc(100% - 12px) 0, 100% 12px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 12px 100%, 0 calc(100% - 12px), 0 12px)'
+                        }}
                         whileHover={{
-                            scale: 1.05,
-                            boxShadow: '0 0 20px rgba(99, 102, 241, 0.3)'
+                            scale: 1.02,
+                            boxShadow: '0 0 20px rgba(34, 211, 238, 0.3)'
                         }}
                         transition={{ type: 'spring', stiffness: 300 }}
                     >
                         <span className="relative flex h-3 w-3">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                            <span className="animate-ping absolute inline-flex h-full w-full bg-green-400 opacity-75"
+                                style={{ clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)' }}></span>
+                            <span className="relative inline-flex h-3 w-3 bg-green-500"
+                                style={{ clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)' }}></span>
                         </span>
-                        <span className="text-gray-300">
-                            Currently at <span className="text-indigo-400 font-medium">Learning Chain</span> as Assistant Manager
+                        <span className="text-gray-300 font-['Rajdhani'] text-sm">
+                            <span className="text-cyan-500 font-mono text-xs">STATUS:</span> Active at{' '}
+                            <span className="text-cyan-400 font-['Orbitron'] font-medium">Learning Chain</span>
+                            <span className="text-gray-500 mx-2">|</span>
+                            <span className="text-magenta-400">Assistant Manager</span>
                         </span>
                     </motion.div>
                 </motion.div>

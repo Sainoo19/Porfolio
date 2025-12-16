@@ -1,6 +1,6 @@
 /**
- * @fileoverview Glass Card Component
- * @description Glassmorphism card with blur effects and 3D hover
+ * @fileoverview Glass Card Component - Mecha HUD Style
+ * @description Cyberpunk HUD panel with tech borders and effects
  */
 
 import { useState, useRef } from 'react';
@@ -9,7 +9,7 @@ import type { CardProps } from '../../types';
 import { SCALE_VARIANTS } from '../../constants';
 
 /**
- * Glassmorphism card component with 3D tilt effect
+ * Mecha HUD Panel component with cyberpunk styling
  */
 export function GlassCard({
     children,
@@ -28,8 +28,8 @@ export function GlassCard({
         const y = e.clientY - rect.top;
         const centerX = rect.width / 2;
         const centerY = rect.height / 2;
-        setRotateX((y - centerY) / 25);
-        setRotateY((centerX - x) / 25);
+        setRotateX((y - centerY) / 30);
+        setRotateY((centerX - x) / 30);
     };
 
     const handleMouseLeave = () => {
@@ -60,40 +60,60 @@ export function GlassCard({
                 perspective: '1000px',
             }}
             className={`
-        relative overflow-hidden rounded-3xl p-8
-        bg-gradient-to-br from-white/10 to-white/5
-        backdrop-blur-xl border border-white/10
-        shadow-2xl shadow-black/20
-        transition-colors duration-500
-        before:absolute before:inset-0 before:-z-10
-        before:bg-gradient-to-br before:from-indigo-500/10 before:to-purple-500/10
-        before:opacity-0 before:transition-opacity before:duration-500
-        hover:before:opacity-100
-        hover:border-white/20
-        ${className}
-      `}
+                relative overflow-hidden p-6
+                bg-gradient-to-br from-gray-900/90 via-gray-950/95 to-gray-900/90
+                backdrop-blur-xl
+                border border-cyan-500/30
+                transition-all duration-300
+                hover:border-cyan-400/60
+                hover:shadow-lg hover:shadow-cyan-500/20
+                ${className}
+            `}
+            style={{
+                clipPath: 'polygon(0 12px, 12px 0, calc(100% - 12px) 0, 100% 12px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 12px 100%, 0 calc(100% - 12px))',
+            }}
         >
-            {/* Dynamic glow on hover */}
-            <motion.div
-                className="absolute -top-24 -right-24 w-48 h-48 bg-indigo-500/20 rounded-full blur-3xl"
-                animate={{ opacity: isHovered ? 0.8 : 0.5 }}
-            />
-            <motion.div
-                className="absolute -bottom-24 -left-24 w-48 h-48 bg-purple-500/20 rounded-full blur-3xl"
-                animate={{ opacity: isHovered ? 0.8 : 0.5 }}
-            />
+            {/* Top border glow */}
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500 to-transparent" />
 
-            {/* Shine effect on hover */}
+            {/* Bottom border glow */}
+            <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-magenta-500/50 to-transparent" />
+
+            {/* Corner brackets */}
+            <svg className="absolute top-0 left-0 w-6 h-6 text-cyan-500/60" viewBox="0 0 24 24" fill="none">
+                <path d="M0 8 L0 0 L8 0" stroke="currentColor" strokeWidth="2" />
+            </svg>
+            <svg className="absolute top-0 right-0 w-6 h-6 text-cyan-500/60" viewBox="0 0 24 24" fill="none">
+                <path d="M24 8 L24 0 L16 0" stroke="currentColor" strokeWidth="2" />
+            </svg>
+            <svg className="absolute bottom-0 left-0 w-6 h-6 text-cyan-500/60" viewBox="0 0 24 24" fill="none">
+                <path d="M0 16 L0 24 L8 24" stroke="currentColor" strokeWidth="2" />
+            </svg>
+            <svg className="absolute bottom-0 right-0 w-6 h-6 text-cyan-500/60" viewBox="0 0 24 24" fill="none">
+                <path d="M24 16 L24 24 L16 24" stroke="currentColor" strokeWidth="2" />
+            </svg>
+
+            {/* Scan line on hover */}
             {isHovered && hoverable && (
                 <motion.div
-                    initial={{ opacity: 0, x: '-100%' }}
-                    animate={{ opacity: 0.3, x: '200%' }}
-                    transition={{ duration: 0.6, ease: 'easeInOut' }}
-                    className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -z-0 pointer-events-none"
-                    style={{ transform: 'skewX(-20deg)' }}
+                    initial={{ top: 0, opacity: 0 }}
+                    animate={{ top: '100%', opacity: [0, 0.5, 0] }}
+                    transition={{ duration: 1.5, ease: 'easeInOut' }}
+                    className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-400 to-transparent pointer-events-none"
                 />
             )}
 
+            {/* Glow effect on corners when hovered */}
+            <motion.div
+                className="absolute -top-12 -left-12 w-24 h-24 bg-cyan-500/20 rounded-full blur-2xl"
+                animate={{ opacity: isHovered ? 0.6 : 0.2 }}
+            />
+            <motion.div
+                className="absolute -bottom-12 -right-12 w-24 h-24 bg-magenta-500/20 rounded-full blur-2xl"
+                animate={{ opacity: isHovered ? 0.6 : 0.2 }}
+            />
+
+            {/* Content */}
             <div className="relative z-10">{children}</div>
         </motion.div>
     );

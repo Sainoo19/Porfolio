@@ -25,7 +25,6 @@ export interface Skill {
     readonly id: string;
     readonly name: string;
     readonly category: SkillCategory;
-    readonly proficiency: number; // 0-100
     readonly icon?: string;
 }
 

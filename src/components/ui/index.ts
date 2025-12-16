@@ -17,3 +17,4 @@ export { Card3D } from './Card3D';
 export { ScrollProgress } from './ScrollProgress';
 export { ScrollToTop } from './ScrollToTop';
 export { LoadingScreen } from './LoadingScreen';
+export { HUDOverlay } from './HUDOverlay';

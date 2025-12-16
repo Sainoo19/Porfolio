@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240" fill="none">
-    <rect width="200" height="240" fill="#c8102e" rx="12"/>
-    <path d="M12 24 C12 13 21 4 32 4 H168 C179 4 188 13 188 24 V48 H12 V24Z" fill="#b30f29"/>
-    <path d="M26 76 L86 110 L140 206 L120 194 L90 142 L60 126 Z" fill="white"/>
-    <path d="M174 76 L114 110 L60 206 L80 194 L110 142 L140 126 Z" fill="white"/>
-    <text x="50%" y="32" fill="#c8102e" font-family="Arial, sans-serif" font-size="10" text-anchor="middle">Van Lang</text>
-</svg>

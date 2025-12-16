@@ -1,6 +1,6 @@
 /**
- * @fileoverview Button Component
- * @description Animated button with multiple variants and glow effects
+ * @fileoverview Button Component - Mecha HUD Style
+ * @description Cyberpunk HUD button with tech effects
  */
 
 import { forwardRef, useState } from 'react';
@@ -9,17 +9,17 @@ import type { ButtonProps } from '../../types';
 import { TAP_SCALE } from '../../constants';
 
 const VARIANT_STYLES = {
-    primary: 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-500 hover:to-purple-500',
-    secondary: 'bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm border border-white/20',
-    outline: 'border-2 border-indigo-500 text-indigo-400 hover:bg-indigo-500/10',
-    ghost: 'text-white hover:bg-white/10',
+    primary: 'bg-gradient-to-r from-cyan-600 to-cyan-500 text-gray-950 hover:from-cyan-500 hover:to-cyan-400 font-semibold',
+    secondary: 'bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 backdrop-blur-sm border border-cyan-500/40 hover:border-cyan-400',
+    outline: 'border border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-400',
+    ghost: 'text-cyan-400 hover:bg-cyan-500/10',
 } as const;
 
 const GLOW_COLORS = {
-    primary: 'rgba(99, 102, 241, 0.5)',
-    secondary: 'rgba(255, 255, 255, 0.2)',
-    outline: 'rgba(99, 102, 241, 0.3)',
-    ghost: 'rgba(255, 255, 255, 0.1)',
+    primary: 'rgba(34, 211, 238, 0.5)',
+    secondary: 'rgba(34, 211, 238, 0.3)',
+    outline: 'rgba(34, 211, 238, 0.3)',
+    ghost: 'rgba(34, 211, 238, 0.1)',
 } as const;
 
 const SIZE_STYLES = {
@@ -70,7 +70,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref
     ) => {
         const [isHovered, setIsHovered] = useState(false);
-        const baseStyles = 'relative inline-flex items-center justify-center gap-2 font-medium rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-transparent disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden';
+        const baseStyles = "relative inline-flex items-center justify-center gap-2 font-['Orbitron'] uppercase tracking-wider transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-gray-950 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden";
 
         return (
             <motion.button
@@ -89,16 +89,20 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                 disabled={disabled || isLoading}
                 {...props}
             >
-                {/* Shine effect on hover */}
+                {/* Scan line effect on hover */}
                 {isHovered && variant === 'primary' && (
                     <motion.span
-                        initial={{ x: '-100%', opacity: 0 }}
-                        animate={{ x: '200%', opacity: 0.3 }}
-                        transition={{ duration: 0.5, ease: 'easeInOut' }}
-                        className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none"
-                        style={{ transform: 'skewX(-20deg)' }}
+                        initial={{ top: 0, opacity: 0 }}
+                        animate={{ top: '100%', opacity: [0, 0.5, 0] }}
+                        transition={{ duration: 0.8, ease: 'easeInOut' }}
+                        className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-white to-transparent pointer-events-none"
                     />
                 )}
+                {/* Corner brackets */}
+                <span className="absolute top-0 left-0 w-2 h-2 border-t border-l border-current opacity-50" />
+                <span className="absolute top-0 right-0 w-2 h-2 border-t border-r border-current opacity-50" />
+                <span className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-current opacity-50" />
+                <span className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-current opacity-50" />
                 {isLoading && (
                     <svg
                         className="animate-spin h-5 w-5"

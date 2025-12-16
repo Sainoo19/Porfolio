@@ -1,12 +1,12 @@
 /**
- * @fileoverview Hero Section Component
- * @description Landing section with 3D background and animated text - WOW effect
+ * @fileoverview Hero Section Component - Mecha Gundam Cyberpunk Style
+ * @description Landing section with pilot helmet HUD effect
  */
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronDown, Github, Linkedin, Mail, MapPin, Sparkles, FileText } from 'lucide-react';
-import { HeroScene } from '../three';
+import { ChevronDown, Github, Linkedin, Mail, MapPin, Crosshair, FileText, Cpu, Wifi, Shield } from 'lucide-react';
+import { PilotHUDBackground } from '../three/PilotHUDBackground';
 import { TypewriterText } from '../ui';
 import { Button } from '../ui';
 import { PERSONAL_INFO } from '../../constants';
@@ -66,31 +66,36 @@ export function HeroSection() {
             id="home"
             className="relative min-h-screen flex items-center justify-center overflow-hidden"
         >
-            {/* 3D Background Scene */}
-            <HeroScene className="z-0" />
+            {/* Pilot Helmet HUD Background */}
+            <PilotHUDBackground className="z-0" />
 
-            {/* Animated gradient background */}
+            {/* Animated gradient background - Cyberpunk style */}
             <motion.div
                 className="absolute inset-0 z-5"
                 animate={{
                     background: [
-                        'radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 50%)',
-                        'radial-gradient(circle at 80% 50%, rgba(168, 85, 247, 0.15) 0%, transparent 50%)',
-                        'radial-gradient(circle at 50% 80%, rgba(236, 72, 153, 0.15) 0%, transparent 50%)',
-                        'radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 50%)',
+                        'radial-gradient(circle at 20% 50%, rgba(34, 211, 238, 0.1) 0%, transparent 50%)',
+                        'radial-gradient(circle at 80% 50%, rgba(217, 70, 239, 0.1) 0%, transparent 50%)',
+                        'radial-gradient(circle at 50% 80%, rgba(34, 211, 238, 0.1) 0%, transparent 50%)',
+                        'radial-gradient(circle at 20% 50%, rgba(34, 211, 238, 0.1) 0%, transparent 50%)',
                     ],
                 }}
                 transition={{ duration: 10, repeat: Infinity, ease: 'linear' }}
             />
 
-            {/* Gradient overlays */}
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-gray-900/50 to-gray-900 z-10 pointer-events-none" />
+            {/* HUD Grid background */}
+            <div className="absolute inset-0 z-5 opacity-20">
+                <div className="w-full h-full bg-hud-grid" />
+            </div>
 
-            {/* Floating particles */}
+            {/* Gradient overlays */}
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-gray-950/50 to-gray-950 z-10 pointer-events-none" />
+
+            {/* Floating particles - Cyan themed */}
             {[...Array(20)].map((_, i) => (
                 <motion.div
                     key={i}
-                    className="absolute w-1 h-1 bg-indigo-400/60 rounded-full z-15"
+                    className="absolute w-1 h-1 bg-cyan-400/60 rounded-full z-15"
                     initial={{
                         x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1000),
                         y: Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 800),
@@ -118,33 +123,46 @@ export function HeroSection() {
                 }}
                 className="relative z-20 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center"
             >
-                {/* Location badge with glow */}
-                <motion.div variants={FADE_IN_VARIANTS} className="mb-8">
+                {/* Location badge - HUD Style */}
+                <motion.div variants={FADE_IN_VARIANTS} className="mb-6">
                     <motion.span
-                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/5 backdrop-blur-md border border-white/10 rounded-full text-gray-300 text-base"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-500/5 backdrop-blur-md border border-cyan-500/30 text-cyan-400 text-sm font-mono uppercase tracking-wider"
+                        style={{
+                            clipPath: 'polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)'
+                        }}
                         whileHover={{
                             scale: 1.05,
-                            boxShadow: '0 0 30px rgba(99, 102, 241, 0.3)',
-                            borderColor: 'rgba(99, 102, 241, 0.5)',
+                            boxShadow: '0 0 30px rgba(34, 211, 238, 0.3)',
+                            borderColor: 'rgba(34, 211, 238, 0.6)',
                         }}
                     >
                         <motion.span
                             animate={{ scale: [1, 1.2, 1] }}
                             transition={{ duration: 2, repeat: Infinity }}
                         >
-                            <MapPin size={16} className="text-indigo-400" />
+                            <MapPin size={16} className="text-magenta-400" />
                         </motion.span>
-                        {PERSONAL_INFO.location}
+                        <span className="text-cyan-500/50">[LOC]</span> {PERSONAL_INFO.location}
                     </motion.span>
                 </motion.div>
 
-                {/* Animated Name with letter-by-letter reveal */}
+                {/* Pilot ID Header */}
+                <motion.div 
+                    variants={FADE_IN_VARIANTS}
+                    className="mb-4 flex items-center justify-center gap-4"
+                >
+                    <div className="h-px w-16 bg-gradient-to-r from-transparent to-cyan-500" />
+                    <span className="text-xs font-mono text-cyan-400/60 tracking-widest">PILOT_ID: NVT-001</span>
+                    <div className="h-px w-16 bg-gradient-to-l from-transparent to-cyan-500" />
+                </motion.div>
+
+                {/* Animated Name with letter-by-letter reveal - HUD Style */}
                 <motion.h1
                     variants={SLIDE_UP_VARIANTS}
-                    className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-black mb-6 tracking-tight leading-tight"
+                    className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black mb-4 tracking-tight leading-tight font-['Orbitron']"
                 >
                     {/* Greeting */}
-                    <span className="block text-white mb-2">
+                    <span className="block text-cyan-100 mb-2">
                         {greeting.split('').map((char, i) => (
                             <motion.span
                                 key={i}
@@ -160,7 +178,7 @@ export function HeroSection() {
                         ))}
                     </span>
 
-                    {/* Name with glow effect */}
+                    {/* Name with glow effect - Cyan/Magenta gradient */}
                     <motion.span
                         className="inline-block pb-2"
                         initial={{ opacity: 0, y: 50 }}
@@ -172,18 +190,25 @@ export function HeroSection() {
                         }}
                         style={{ lineHeight: 1.2 }}
                     >
-                        <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                        <span 
+                            className="bg-gradient-to-r from-cyan-400 via-magenta-400 to-cyan-400 bg-clip-text text-transparent"
+                            style={{ 
+                                textShadow: '0 0 40px rgba(34, 211, 238, 0.5)',
+                                filter: 'drop-shadow(0 0 20px rgba(34, 211, 238, 0.3))'
+                            }}
+                        >
                             {name}
                         </span>
                     </motion.span>
                 </motion.h1>
 
-                {/* Role with enhanced typewriter effect */}
-                <motion.div variants={SLIDE_UP_VARIANTS} className="mb-8">
-                    <h2 className="text-3xl sm:text-4xl md:text-5xl text-gray-200 font-light flex items-center justify-center gap-3">
+                {/* Role with enhanced typewriter effect - HUD Style */}
+                <motion.div variants={SLIDE_UP_VARIANTS} className="mb-6">
+                    <h2 className="text-2xl sm:text-3xl md:text-4xl text-gray-300 font-light flex items-center justify-center gap-3 font-['Rajdhani']">
+                        <span className="text-cyan-500/50">&lt;</span>
                         <span>I'm a</span>
                         <motion.span
-                            className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400"
+                            className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-magenta-400 font-['Orbitron']"
                             animate={{
                                 backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
                             }}
@@ -192,22 +217,23 @@ export function HeroSection() {
                         >
                             <TypewriterText words={ROLES} />
                         </motion.span>
+                        <span className="text-cyan-500/50">/&gt;</span>
                     </h2>
                 </motion.div>
 
-                {/* Summary with animated highlight */}
+                {/* Summary with animated highlight - HUD Style */}
                 <motion.p
                     variants={SLIDE_UP_VARIANTS}
-                    className="text-gray-300 text-xl md:text-2xl max-w-3xl mx-auto mb-10 leading-relaxed"
+                    className="text-gray-400 text-base md:text-lg max-w-3xl mx-auto mb-8 leading-relaxed font-['Rajdhani']"
                 >
                     Bridging technical expertise with project management skills to deliver
                     <motion.span
                         className="relative inline-block mx-2"
                         whileHover={{ scale: 1.05 }}
                     >
-                        <span className="relative z-10 text-white font-semibold">exceptional results</span>
+                        <span className="relative z-10 text-cyan-400 font-semibold">exceptional results</span>
                         <motion.span
-                            className="absolute inset-0 bg-indigo-500/20 rounded-lg -z-0"
+                            className="absolute inset-0 bg-cyan-500/10 border border-cyan-500/30 -z-0"
                             initial={{ scaleX: 0 }}
                             animate={{ scaleX: 1 }}
                             transition={{ delay: 1.5, duration: 0.5 }}
@@ -217,10 +243,32 @@ export function HeroSection() {
                     . Passionate about clean code and efficient workflows.
                 </motion.p>
 
-                {/* CTA Buttons with enhanced effects */}
+                {/* Status indicators - Mecha style */}
+                <motion.div 
+                    variants={FADE_IN_VARIANTS}
+                    className="flex items-center justify-center gap-6 mb-8 text-xs font-mono"
+                >
+                    {[
+                        { icon: Cpu, label: 'SYS', status: 'READY', color: 'text-green-400' },
+                        { icon: Wifi, label: 'NET', status: 'ONLINE', color: 'text-cyan-400' },
+                        { icon: Shield, label: 'DEF', status: 'ACTIVE', color: 'text-magenta-400' },
+                    ].map(({ icon: Icon, label, status, color }) => (
+                        <motion.div 
+                            key={label}
+                            className="flex items-center gap-2 text-gray-500"
+                            whileHover={{ scale: 1.1 }}
+                        >
+                            <Icon size={14} className={color} />
+                            <span>{label}:</span>
+                            <span className={color}>{status}</span>
+                        </motion.div>
+                    ))}
+                </motion.div>
+
+                {/* CTA Buttons with HUD effects */}
                 <motion.div
                     variants={SLIDE_UP_VARIANTS}
-                    className="flex flex-col sm:flex-row items-center justify-center gap-5 mb-14"
+                    className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-10"
                 >
                     <motion.div
                         whileHover={{ scale: 1.05 }}
@@ -228,12 +276,12 @@ export function HeroSection() {
                     >
                         <Button
                             variant="primary"
-                            size="lg"
-                            className="text-lg px-8 py-4 relative overflow-hidden group"
+                            size="md"
+                            className="text-base px-6 py-2.5 relative overflow-hidden group font-['Orbitron'] uppercase tracking-wider"
                             onClick={() => document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' })}
                         >
                             <span className="relative z-10 flex items-center gap-2">
-                                <Sparkles size={20} className="group-hover:animate-spin" />
+                                <Crosshair size={18} className="group-hover:animate-pulse" />
                                 View My Work
                             </span>
                         </Button>
@@ -244,8 +292,8 @@ export function HeroSection() {
                     >
                         <Button
                             variant="secondary"
-                            size="lg"
-                            className="text-lg px-8 py-4"
+                            size="md"
+                            className="text-base px-6 py-2.5 font-['Orbitron'] uppercase tracking-wider"
                             onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
                         >
                             Get In Touch
@@ -259,20 +307,23 @@ export function HeroSection() {
                             href="/resume.pdf"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 text-lg px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/25 transition-all duration-300"
+                            className="inline-flex items-center gap-2 text-sm px-6 py-3 bg-transparent border border-cyan-500/50 hover:bg-cyan-500/10 text-cyan-400 font-['Orbitron'] uppercase tracking-wider transition-all duration-300"
+                            style={{
+                                clipPath: 'polygon(0 0, 100% 0, 100% 70%, 90% 100%, 0 100%)'
+                            }}
                         >
-                            <FileText size={20} />
+                            <FileText size={18} />
                             View My CV
                         </a>
                     </motion.div>
                 </motion.div>
 
-                {/* Social Links with hover effects */}
-                <motion.div variants={FADE_IN_VARIANTS} className="flex items-center justify-center gap-5">
+                {/* Social Links - HUD Style */}
+                <motion.div variants={FADE_IN_VARIANTS} className="flex items-center justify-center gap-4">
                     {[
-                        { icon: Github, href: 'https://github.com/Sainoo19', label: 'GitHub', color: 'hover:text-white' },
-                        { icon: Linkedin, href: 'https://linkedin.com/in/nvtrung19', label: 'LinkedIn', color: 'hover:text-blue-400' },
-                        { icon: Mail, href: 'mailto:nvtrung19.work@gmail.com', label: 'Email', color: 'hover:text-pink-400' },
+                        { icon: Github, href: 'https://github.com/Sainoo19', label: 'GitHub', color: 'hover:text-cyan-400 hover:border-cyan-500/60' },
+                        { icon: Linkedin, href: 'https://linkedin.com/in/nvtrung19', label: 'LinkedIn', color: 'hover:text-cyan-400 hover:border-cyan-500/60' },
+                        { icon: Mail, href: 'mailto:nvtrung19.work@gmail.com', label: 'Email', color: 'hover:text-magenta-400 hover:border-magenta-500/60' },
                     ].map(({ icon: Icon, href, label, color }) => (
                         <motion.a
                             key={label}
@@ -280,63 +331,68 @@ export function HeroSection() {
                             target="_blank"
                             rel="noopener noreferrer"
                             whileHover={{
-                                scale: 1.2,
-                                y: -5,
-                                boxShadow: '0 10px 40px rgba(99, 102, 241, 0.3)',
+                                scale: 1.1,
+                                y: -3,
                             }}
                             whileTap={{ scale: 0.9 }}
-                            className={`p-4 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl text-gray-400 ${color} hover:border-indigo-500/50 transition-all`}
+                            className={`p-3 bg-gray-900/50 backdrop-blur-md border border-cyan-500/30 text-gray-400 ${color} transition-all`}
+                            style={{
+                                clipPath: 'polygon(0 8px, 8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%)'
+                            }}
                             aria-label={label}
                         >
-                            <Icon size={24} />
+                            <Icon size={20} />
                         </motion.a>
                     ))}
                 </motion.div>
             </motion.div>
 
-            {/* Scroll indicator with enhanced animation */}
+            {/* Scroll indicator - HUD Style */}
             <motion.button
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 2, duration: 0.5 }}
                 onClick={handleScrollDown}
-                className="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-20 flex flex-col items-center gap-3 text-gray-400 hover:text-indigo-400 transition-colors cursor-pointer group"
+                className="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-20 flex flex-col items-center gap-3 text-cyan-400/60 hover:text-cyan-400 transition-colors cursor-pointer group"
             >
                 <motion.span
-                    className="text-sm uppercase tracking-[0.2em] font-medium"
+                    className="text-xs uppercase tracking-[0.2em] font-mono"
                     animate={{ opacity: [0.5, 1, 0.5] }}
                     transition={{ duration: 2, repeat: Infinity }}
                 >
-                    Scroll Down
+                    &lt; SCROLL_DOWN /&gt;
                 </motion.span>
                 <motion.div
                     animate={{ y: [0, 12, 0] }}
                     transition={{ duration: 1.5, repeat: Infinity }}
-                    className="p-2 border border-white/20 rounded-full group-hover:border-indigo-500/50 transition-colors"
+                    className="p-2 border border-cyan-500/30 group-hover:border-cyan-500/60 transition-colors"
+                    style={{
+                        clipPath: 'polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%)'
+                    }}
                 >
                     <ChevronDown size={20} />
                 </motion.div>
             </motion.button>
 
-            {/* Enhanced decorative elements */}
+            {/* Enhanced decorative elements - Cyberpunk colors */}
             <motion.div
-                className="absolute top-20 left-10 w-96 h-96 bg-indigo-500/30 rounded-full blur-[120px] pointer-events-none"
+                className="absolute top-20 left-10 w-96 h-96 bg-cyan-500/20 rounded-full blur-[120px] pointer-events-none"
                 animate={{
                     scale: [1, 1.2, 1],
-                    opacity: [0.3, 0.5, 0.3],
+                    opacity: [0.2, 0.4, 0.2],
                 }}
                 transition={{ duration: 8, repeat: Infinity }}
             />
             <motion.div
-                className="absolute bottom-20 right-10 w-[500px] h-[500px] bg-purple-500/20 rounded-full blur-[150px] pointer-events-none"
+                className="absolute bottom-20 right-10 w-[500px] h-[500px] bg-magenta-500/15 rounded-full blur-[150px] pointer-events-none"
                 animate={{
                     scale: [1.2, 1, 1.2],
-                    opacity: [0.2, 0.4, 0.2],
+                    opacity: [0.15, 0.3, 0.15],
                 }}
                 transition={{ duration: 10, repeat: Infinity }}
             />
             <motion.div
-                className="absolute top-1/2 left-1/4 w-64 h-64 bg-pink-500/20 rounded-full blur-[100px] pointer-events-none"
+                className="absolute top-1/2 left-1/4 w-64 h-64 bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none"
                 animate={{
                     x: [0, 50, 0],
                     y: [0, -30, 0],

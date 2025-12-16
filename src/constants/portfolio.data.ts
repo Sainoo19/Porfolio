@@ -14,6 +14,11 @@ import type {
     Certification,
 } from '../types';
 
+// Import company logos
+import LCLogo from '../assets/logos/companies/LCLogo.png';
+import NashLogo from '../assets/logos/companies/NashLogo.png';
+import VLULogo from '../assets/logos/companies/VLULogo.png';
+
 export const PERSONAL_INFO: PersonalInfo = {
     name: 'Nguyễn Viết Trung',
     title: 'Project Coordinator / Business Analyst',
@@ -47,40 +52,44 @@ export const PERSONAL_INFO: PersonalInfo = {
 
 export const SKILLS: Skill[] = [
     // Programming Languages
-    { id: 'python', name: 'Python', category: 'language', proficiency: 80 },
-    { id: 'csharp', name: 'C#', category: 'language', proficiency: 85 },
-    { id: 'java', name: 'Java', category: 'language', proficiency: 80 },
-    { id: 'javascript', name: 'JavaScript', category: 'language', proficiency: 90 },
-    { id: 'typescript', name: 'TypeScript', category: 'language', proficiency: 85 },
+    { id: 'csharp', name: 'C#', category: 'language' },
+    { id: 'java', name: 'Java', category: 'language' },
+    { id: 'javascript', name: 'JavaScript', category: 'language' },
+    { id: 'typescript', name: 'TypeScript', category: 'language' },
 
     // Frameworks
-    { id: 'react', name: 'React', category: 'framework', proficiency: 90 },
-    { id: 'nodejs', name: 'Node.js', category: 'framework', proficiency: 85 },
-    { id: 'dotnet', name: '.NET Framework & Core', category: 'framework', proficiency: 85 },
-    { id: 'spring', name: 'Spring Boot', category: 'framework', proficiency: 75 },
+    { id: 'react', name: 'React', category: 'framework' },
+    { id: 'nodejs', name: 'Node.js', category: 'framework' },
+    { id: 'dotnet', name: '.NET Framework & Core', category: 'framework' },
+    { id: 'spring', name: 'Spring Boot', category: 'framework' },
 
     // Databases
-    { id: 'sql-server', name: 'SQL Server', category: 'database', proficiency: 85 },
-    { id: 'mysql', name: 'MySQL', category: 'database', proficiency: 80 },
-    { id: 'mongodb', name: 'MongoDB', category: 'database', proficiency: 85 },
+    { id: 'sql-server', name: 'SQL Server', category: 'database' },
+    { id: 'mysql', name: 'MySQL', category: 'database' },
+    { id: 'mongodb', name: 'MongoDB', category: 'database' },
 
     // Tools
-    { id: 'git', name: 'Git', category: 'tool', proficiency: 90 },
-    { id: 'azure-devops', name: 'Azure DevOps', category: 'tool', proficiency: 85 },
-    { id: 'jira', name: 'Jira', category: 'tool', proficiency: 85 },
-    { id: 'figma', name: 'Figma', category: 'tool', proficiency: 75 },
+    { id: 'git', name: 'Git', category: 'tool' },
+    { id: 'azure-devops', name: 'Azure DevOps', category: 'tool' },
+    { id: 'jira', name: 'Jira', category: 'tool' },
+    { id: 'figma', name: 'Figma', category: 'tool' },
+    { id: 'lark-suite', name: 'Lark Suite', category: 'tool' },
 
     // Methodologies
-    { id: 'agile', name: 'Agile/Scrum', category: 'methodology', proficiency: 90 },
-    { id: 'clean-arch', name: 'Clean Architecture', category: 'methodology', proficiency: 85 },
-    { id: 'oop', name: 'OOP', category: 'methodology', proficiency: 90 },
-    { id: 'solid', name: 'SOLID Principles', category: 'methodology', proficiency: 85 },
+    { id: 'agile', name: 'Agile/Scrum', category: 'methodology' },
+    { id: 'clean-arch', name: 'Clean Architecture', category: 'methodology' },
+    { id: 'oop', name: 'OOP', category: 'methodology' },
+    { id: 'solid', name: 'SOLID Principles', category: 'methodology' },
+    { id: 'tdd', name: 'Test-Driven Development', category: 'methodology' },
+    { id: 'waterfall', name: 'Waterfall', category: 'methodology' },
 
     // Soft Skills
-    { id: 'project-mgmt', name: 'Project Management', category: 'soft-skill', proficiency: 85 },
-    { id: 'business-analysis', name: 'Business Analysis', category: 'soft-skill', proficiency: 80 },
-    { id: 'stakeholder-comm', name: 'Stakeholder Communication', category: 'soft-skill', proficiency: 85 },
-    { id: 'risk-mgmt', name: 'Risk Management', category: 'soft-skill', proficiency: 80 },
+    { id: 'project-mgmt', name: 'Project Management', category: 'soft-skill' },
+    { id: 'business-analysis', name: 'Business Analysis', category: 'soft-skill' },
+    { id: 'stakeholder-comm', name: 'Stakeholder Communication', category: 'soft-skill' },
+    { id: 'risk-mgmt', name: 'Risk Management', category: 'soft-skill' },
+    { id: 'time-mgmt', name: 'Time Management', category: 'soft-skill' },
+    { id: 'problem-solving', name: 'Problem Solving', category: 'soft-skill' },
 ];
 
 export const EXPERIENCES: Experience[] = [
@@ -90,7 +99,7 @@ export const EXPERIENCES: Experience[] = [
         position: 'Assistant Manager (Project Coordinator & Business Analyst)',
         startDate: 'April 2025',
         endDate: 'Present',
-        logo: '/assets/logos/companies/LCLogo.png',
+        logo: LCLogo,
         responsibilities: [
             'Coordinated project lifecycles for Web3 Blockchain and AI training programs, managing schedules and resource allocation',
             'Acted as a liaison between Subject Matter Experts, Management, and Stakeholders to gather requirements',
@@ -116,7 +125,7 @@ export const EXPERIENCES: Experience[] = [
         position: 'Software Engineering Intern',
         startDate: 'July 2024',
         endDate: 'March 2025',
-        logo: '/assets/logos/companies/NashLogo.png',
+        logo: NashLogo,
         responsibilities: [
             'Served as both Developer and Assistant PM for training projects (TCG Shop, Asset Management)',
             'Led Agile/Scrum workflows, managed backlog refinement using Azure DevOps',
@@ -142,7 +151,7 @@ export const EXPERIENCES: Experience[] = [
         position: 'Teaching Assistant - Basic Programming Course',
         startDate: '2022',
         endDate: '2023',
-        logo: '/assets/logos/companies/VLULogo.png',
+        logo: VLULogo,
         responsibilities: [
             'Assisted lecturer in delivering course content through programming exercises',
             'Provided personalized support to students on fundamental programming principles',
@@ -214,7 +223,7 @@ export const EDUCATION: Education[] = [
         field: 'Software Engineering',
         startYear: 2021,
         endYear: 2025,
-        gpa: 3.28,
+        gpa: 3.28 / 4.0,
     },
 ];
 
@@ -250,5 +259,4 @@ export const NAV_ITEMS = [
     { label: 'Skills', href: '#skills' },
     { label: 'Experience', href: '#experience' },
     { label: 'Projects', href: '#projects' },
-    { label: 'Contact', href: '#contact' },
 ] as const;

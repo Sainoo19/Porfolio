@@ -1,6 +1,6 @@
 /**
- * @fileoverview Skills Section Component
- * @description Lists skills as 3D cards (no scores), with context of where they were used
+ * @fileoverview Skills Section Component - Mecha HUD Capability Modules
+ * @description Lists skills as pilot capability modules in HUD style
  */
 
 import { useRef, useState } from 'react';
@@ -10,14 +10,14 @@ import { SKILLS } from '../../constants';
 import { STAGGER_CONTAINER_VARIANTS, SLIDE_UP_VARIANTS, SCALE_VARIANTS } from '../../constants';
 import type { SkillCategory } from '../../types';
 
-const SKILL_CATEGORIES: { key: SkillCategory | 'all'; label: string; color: string }[] = [
-    { key: 'all', label: 'All', color: 'from-indigo-500 to-purple-500' },
-    { key: 'language', label: 'Languages', color: 'from-indigo-500 to-blue-500' },
-    { key: 'framework', label: 'Frameworks', color: 'from-purple-500 to-pink-500' },
-    { key: 'database', label: 'Databases', color: 'from-cyan-500 to-teal-500' },
-    { key: 'tool', label: 'Tools', color: 'from-orange-500 to-yellow-500' },
-    { key: 'methodology', label: 'Methodologies', color: 'from-green-500 to-emerald-500' },
-    { key: 'soft-skill', label: 'Soft Skills', color: 'from-pink-500 to-rose-500' },
+const SKILL_CATEGORIES: { key: SkillCategory | 'all'; label: string; code: string }[] = [
+    { key: 'all', label: 'ALL_SYS', code: 'A0' },
+    { key: 'language', label: 'LANG', code: 'L1' },
+    { key: 'framework', label: 'FRMWK', code: 'F2' },
+    { key: 'database', label: 'DB', code: 'D3' },
+    { key: 'tool', label: 'TOOLS', code: 'T4' },
+    { key: 'methodology', label: 'METHOD', code: 'M5' },
+    { key: 'soft-skill', label: 'SOFT', code: 'S6' },
 ];
 
 // Usage context for each skill id (lightweight, no scores)
@@ -49,13 +49,13 @@ const SKILL_USAGE: Record<string, { usedIn: string; context: string }> = {
 };
 
 const CATEGORY_BADGE: Record<SkillCategory | 'all', string> = {
-    all: 'bg-indigo-500/15 text-indigo-200',
-    language: 'bg-indigo-500/15 text-indigo-200',
-    framework: 'bg-purple-500/15 text-purple-200',
-    database: 'bg-cyan-500/15 text-cyan-200',
-    tool: 'bg-orange-500/15 text-orange-200',
-    methodology: 'bg-green-500/15 text-green-200',
-    'soft-skill': 'bg-pink-500/15 text-pink-200',
+    all: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30',
+    language: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30',
+    framework: 'bg-magenta-500/15 text-magenta-300 border-magenta-500/30',
+    database: 'bg-green-500/15 text-green-300 border-green-500/30',
+    tool: 'bg-orange-500/15 text-orange-300 border-orange-500/30',
+    methodology: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30',
+    'soft-skill': 'bg-magenta-500/15 text-magenta-300 border-magenta-500/30',
 };
 
 interface SkillCardProps {
@@ -63,7 +63,7 @@ interface SkillCardProps {
     index: number;
 }
 
-// 3D card for each skill (no score)
+// 3D card for each skill - Mecha Module style
 function SkillCard3D({ skill, index }: SkillCardProps) {
     const cardRef = useRef<HTMLDivElement>(null);
     const [rotateX, setRotateX] = useState(0);
@@ -71,6 +71,7 @@ function SkillCard3D({ skill, index }: SkillCardProps) {
     const [isHovered, setIsHovered] = useState(false);
 
     const usage = SKILL_USAGE[skill.id] || { usedIn: 'Project work', context: 'Applied in delivery tasks' };
+    const moduleId = `MOD-${skill.id.toUpperCase().slice(0, 4)}-${String(index + 1).padStart(3, '0')}`;
 
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
         if (!cardRef.current) return;
@@ -108,51 +109,89 @@ function SkillCard3D({ skill, index }: SkillCardProps) {
             style={{
                 transformStyle: 'preserve-3d',
                 perspective: '900px',
+                clipPath: 'polygon(0 8px, 8px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px))'
             }}
-            className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm p-5 group"
+            className="relative overflow-hidden border border-cyan-500/20 bg-gradient-to-br from-cyan-950/40 to-slate-950/60 backdrop-blur-sm p-4 group hover:border-cyan-500/50 transition-all duration-300"
         >
+            {/* Corner brackets */}
+            <svg className="absolute top-1 left-1 w-4 h-4 text-cyan-500/50 group-hover:text-cyan-400 transition-colors">
+                <path d="M0 12 L0 0 L12 0" stroke="currentColor" strokeWidth="1" fill="none" />
+            </svg>
+            <svg className="absolute top-1 right-1 w-4 h-4 text-cyan-500/50 group-hover:text-cyan-400 transition-colors">
+                <path d="M12 12 L12 0 L0 0" stroke="currentColor" strokeWidth="1" fill="none" />
+            </svg>
+            <svg className="absolute bottom-1 left-1 w-4 h-4 text-cyan-500/50 group-hover:text-cyan-400 transition-colors">
+                <path d="M0 0 L0 12 L12 12" stroke="currentColor" strokeWidth="1" fill="none" />
+            </svg>
+            <svg className="absolute bottom-1 right-1 w-4 h-4 text-cyan-500/50 group-hover:text-cyan-400 transition-colors">
+                <path d="M12 0 L12 12 L0 12" stroke="currentColor" strokeWidth="1" fill="none" />
+            </svg>
+
+            {/* Scan line effect */}
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 overflow-hidden pointer-events-none">
+                <div className="absolute inset-0 bg-gradient-to-b from-cyan-500/5 via-transparent to-transparent animate-scan-line" />
+            </div>
+
             {/* Glow layer */}
             <motion.div
                 className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                style={{ background: 'radial-gradient(circle at 30% 30%, rgba(99,102,241,0.15), transparent 55%)' }}
+                style={{ background: 'radial-gradient(circle at 30% 30%, rgba(34,211,238,0.1), transparent 55%)' }}
             />
 
             {/* Shine sweep */}
             {isHovered && (
                 <motion.div
                     initial={{ x: '-120%', opacity: 0 }}
-                    animate={{ x: '150%', opacity: 0.35 }}
+                    animate={{ x: '150%', opacity: 0.25 }}
                     transition={{ duration: 0.5, ease: 'easeInOut' }}
-                    className="absolute inset-0 w-1/2 bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none"
+                    className="absolute inset-0 w-1/2 bg-gradient-to-r from-transparent via-cyan-400/20 to-transparent pointer-events-none"
                     style={{ transform: 'skewX(-15deg)' }}
                 />
             )}
 
             {/* Content */}
-            <div className="relative z-10 space-y-3">
-                <div className="flex items-center justify-between gap-3">
-                    <h3 className="text-lg font-semibold text-white group-hover:text-indigo-200 transition-colors">{skill.name}</h3>
-                    <span className={`text-xs px-3 py-1 rounded-full border border-white/10 ${CATEGORY_BADGE[skill.category]}`}>
-                        {skill.category}
+            <div className="relative z-10 space-y-2">
+                {/* Header with module ID */}
+                <div className="flex items-center justify-between gap-2 mb-3">
+                    <span className="text-[9px] font-mono text-cyan-600 uppercase tracking-wider">{moduleId}</span>
+                    <span className={`text-[9px] px-1.5 py-0.5 border font-mono uppercase ${CATEGORY_BADGE[skill.category]}`}>
+                        {skill.category.replace('-', '_')}
                     </span>
                 </div>
 
-                <div className="text-sm text-gray-300 flex items-center gap-2">
-                    <span className="inline-flex h-2 w-2 rounded-full bg-indigo-400 shadow-[0_0_12px_rgba(99,102,241,0.7)]" />
-                    <span className="font-medium text-indigo-200">Used in</span>
-                    <span className="text-gray-200">{usage.usedIn}</span>
+                {/* Skill name */}
+                <h3 className="text-sm font-['Orbitron'] font-semibold text-white group-hover:text-cyan-300 transition-colors">
+                    {skill.name}
+                </h3>
+
+                {/* Deployment info */}
+                <div className="text-xs text-gray-300 flex items-center gap-1.5 font-['Rajdhani']">
+                    <span className="inline-flex h-1.5 w-1.5 bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.7)]"
+                        style={{ clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)' }} />
+                    <span className="font-mono text-cyan-500 text-[10px]">DEPLOYED:</span>
+                    <span className="text-gray-300">{usage.usedIn}</span>
                 </div>
 
-                <p className="text-sm text-gray-400 leading-relaxed">
-                    {usage.context}
+                {/* Context */}
+                <p className="text-xs text-gray-500 leading-relaxed font-['Rajdhani']">
+                    <span className="text-cyan-600 font-mono">&gt;</span> {usage.context}
                 </p>
+
+                {/* Status bar */}
+                <div className="pt-2 border-t border-cyan-500/10 flex items-center justify-between">
+                    <span className="text-[9px] font-mono text-green-400 flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
+                        ACTIVE
+                    </span>
+                    <span className="text-[9px] font-mono text-gray-600">PWR: 100%</span>
+                </div>
             </div>
         </motion.div>
     );
 }
 
 /**
- * Skills section with 3D cards (no scoring)
+ * Skills section - Pilot Capability Module Registry
  */
 export function SkillsSection() {
     const [activeCategory, setActiveCategory] = useState<SkillCategory | 'all'>('all');
@@ -162,26 +201,44 @@ export function SkillsSection() {
         : SKILLS.filter((skill) => skill.category === activeCategory);
 
     return (
-        <section id="skills" className="relative py-24 md:py-32 overflow-hidden">
+        <section id="skills" className="relative py-16 md:py-20 overflow-hidden">
+            {/* HUD Background grid */}
+            <div className="absolute inset-0 bg-hud-grid opacity-30" />
+
             {/* Background decorations */}
-            <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-500/5 rounded-full blur-[100px]" />
-            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-[100px]" />
+            <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/5 rounded-full blur-[100px]" />
+            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-magenta-500/5 rounded-full blur-[100px]" />
 
             <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <SectionTitle
-                    title="Skills & Expertise"
-                    subtitle="List of tools and technologies I actually used in projects"
-                />
+                {/* Section Header */}
+                <div className="text-center mb-8">
+                    <div className="inline-flex items-center gap-2 text-[10px] font-mono text-cyan-500 mb-2">
+                        <span className="text-gray-600">&lt;</span>
+                        MODULE_REGISTRY
+                        <span className="text-gray-600">/&gt;</span>
+                    </div>
+                    <SectionTitle
+                        title="Capability Modules"
+                        subtitle="Active pilot systems and operational technologies"
+                    />
+                    <div className="flex justify-center items-center gap-4 mt-4 text-[10px] font-mono">
+                        <span className="text-gray-500">TOTAL_MODULES: <span className="text-cyan-400">{SKILLS.length}</span></span>
+                        <span className="text-cyan-500/30">|</span>
+                        <span className="text-gray-500">ACTIVE: <span className="text-green-400">{filteredSkills.length}</span></span>
+                        <span className="text-cyan-500/30">|</span>
+                        <span className="text-gray-500">STATUS: <span className="text-green-400">OPERATIONAL</span></span>
+                    </div>
+                </div>
 
-                {/* Category filters */}
+                {/* Category filters - HUD style */}
                 <motion.div
                     variants={SLIDE_UP_VARIANTS}
                     initial="hidden"
                     whileInView="visible"
                     viewport={{ once: true }}
-                    className="flex flex-wrap justify-center gap-3 mb-10"
+                    className="flex flex-wrap justify-center gap-2 mb-8"
                 >
-                    {SKILL_CATEGORIES.map(({ key, label, color }) => {
+                    {SKILL_CATEGORIES.map(({ key, label, code }) => {
                         const isActive = activeCategory === key;
                         return (
                             <motion.button
@@ -189,31 +246,47 @@ export function SkillsSection() {
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => setActiveCategory(key as SkillCategory | 'all')}
-                                className={`px-5 py-2 rounded-full text-sm font-medium transition-all border ${isActive
-                                    ? `bg-gradient-to-r ${color} text-white border-transparent shadow-lg shadow-indigo-500/25`
-                                    : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white border-white/10'
+                                className={`relative px-4 py-1.5 text-xs font-mono transition-all border ${isActive
+                                    ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/50 shadow-lg shadow-cyan-500/20'
+                                    : 'bg-slate-900/50 text-gray-500 hover:bg-cyan-500/10 hover:text-cyan-400 border-cyan-500/20 hover:border-cyan-500/40'
                                     }`}
+                                style={{
+                                    clipPath: 'polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))'
+                                }}
                             >
+                                <span className="text-cyan-600 mr-1">[{code}]</span>
                                 {label}
+                                {isActive && (
+                                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-cyan-400 animate-pulse"
+                                        style={{ clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)' }} />
+                                )}
                             </motion.button>
                         );
                     })}
                 </motion.div>
 
-                {/* Skill cards */}
+                {/* Skill cards - Module panels */}
                 <motion.div
                     key={activeCategory}
                     variants={STAGGER_CONTAINER_VARIANTS}
                     initial="hidden"
                     whileInView="visible"
                     viewport={{ once: true, margin: '-80px' }}
-                    className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+                    className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
                 >
                     {filteredSkills.map((skill, index) => (
                         <SkillCard3D key={skill.id} skill={skill} index={index} />
                     ))}
                 </motion.div>
 
+                {/* Bottom status bar */}
+                <div className="mt-8 pt-4 border-t border-cyan-500/10 flex items-center justify-center gap-6 text-[10px] font-mono text-gray-600">
+                    <span>REGISTRY_VERSION: 2.0</span>
+                    <span className="text-cyan-500/30">◆</span>
+                    <span>LAST_UPDATE: 2024</span>
+                    <span className="text-cyan-500/30">◆</span>
+                    <span>CERTIFICATION: <span className="text-green-400">VERIFIED</span></span>
+                </div>
             </div>
         </section>
     );

@@ -58,6 +58,7 @@ export function GlassCard({
             style={{
                 transformStyle: 'preserve-3d',
                 perspective: '1000px',
+                clipPath: 'polygon(0 12px, 12px 0, calc(100% - 12px) 0, 100% 12px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 12px 100%, 0 calc(100% - 12px))',
             }}
             className={`
                 relative overflow-hidden p-6
@@ -69,9 +70,6 @@ export function GlassCard({
                 hover:shadow-lg hover:shadow-cyan-500/20
                 ${className}
             `}
-            style={{
-                clipPath: 'polygon(0 12px, 12px 0, calc(100% - 12px) 0, 100% 12px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 12px 100%, 0 calc(100% - 12px))',
-            }}
         >
             {/* Top border glow */}
             <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500 to-transparent" />

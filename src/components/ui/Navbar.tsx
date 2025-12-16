@@ -3,34 +3,23 @@
  * @description Cyberpunk pilot helmet HUD navigation
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Target } from 'lucide-react';
 import { NAV_ITEMS } from '../../constants';
-
-// Loading duration must match LoadingScreen timeout (4000ms)
-const LOADING_DURATION = 4000;
+import { useLoadingState } from '../../App';
 
 /**
  * HUD-style navigation bar
  */
 export function Navbar() {
+    const { isLoading } = useLoadingState();
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [activeSection, setActiveSection] = useState('home');
     const [isHidden, setIsHidden] = useState(false);
-    const [isAppReady, setIsAppReady] = useState(false);
 
-    // Wait for loading screen to finish
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setIsAppReady(true);
-        }, LOADING_DURATION);
-
-        return () => clearTimeout(timer);
-    }, []);
-
-    // Handle scroll effect
+    // Handle scroll effect - memoized handler
     useEffect(() => {
         const handleScroll = () => {
             setIsScrolled(window.scrollY > 50);
@@ -42,7 +31,7 @@ export function Navbar() {
 
     // Hide nav after idle 5s, show on user interaction
     useEffect(() => {
-        if (!isAppReady) return;
+        if (isLoading) return;
 
         let idleTimer: ReturnType<typeof setTimeout>;
 
@@ -64,22 +53,30 @@ export function Navbar() {
             clearTimeout(idleTimer);
             events.forEach((event) => window.removeEventListener(event, resetIdle));
         };
-    }, [isMobileMenuOpen, isAppReady]);
+    }, [isMobileMenuOpen, isLoading]);
 
-    // Handle active section detection
+    // Handle active section detection - throttled
     useEffect(() => {
-        const handleScroll = () => {
-            const sections = NAV_ITEMS.map((item) => item.href.replace('#', ''));
+        let ticking = false;
 
-            for (const section of sections) {
-                const element = document.getElementById(section);
-                if (element) {
-                    const rect = element.getBoundingClientRect();
-                    if (rect.top <= 100 && rect.bottom >= 100) {
-                        setActiveSection(section);
-                        break;
+        const handleScroll = () => {
+            if (!ticking) {
+                ticking = true;
+                requestAnimationFrame(() => {
+                    const sections = NAV_ITEMS.map((item) => item.href.replace('#', ''));
+
+                    for (const section of sections) {
+                        const element = document.getElementById(section);
+                        if (element) {
+                            const rect = element.getBoundingClientRect();
+                            if (rect.top <= 100 && rect.bottom >= 100) {
+                                setActiveSection(section);
+                                break;
+                            }
+                        }
                     }
-                }
+                    ticking = false;
+                });
             }
         };
 
@@ -87,16 +84,17 @@ export function Navbar() {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    const handleNavClick = (href: string) => {
+    // Memoized nav click handler
+    const handleNavClick = useCallback((href: string) => {
         setIsMobileMenuOpen(false);
         const element = document.querySelector(href);
         if (element) {
             element.scrollIntoView({ behavior: 'smooth' });
         }
-    };
+    }, []);
 
     // Don't render until loading screen is done
-    if (!isAppReady) {
+    if (isLoading) {
         return null;
     }
 

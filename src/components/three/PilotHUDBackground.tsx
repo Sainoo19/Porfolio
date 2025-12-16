@@ -1,25 +1,43 @@
 /**
  * @fileoverview Pilot HUD Background Component
  * @description Gundam pilot helmet view with targeting systems, radar, and status displays
+ * @optimizations memo components, reduced intervals, CSS animations where possible
  */
 
 import { motion } from 'framer-motion';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, memo } from 'react';
 
 interface PilotHUDBackgroundProps {
     className?: string;
 }
 
+// Memoized tick marks - static content
+const PowerGaugeTickMarks = memo(function PowerGaugeTickMarks() {
+    return (
+        <>
+            {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                <g key={i}>
+                    <line x1="8" y1={25 + i * 18.75} x2="12" y2={25 + i * 18.75}
+                        stroke="rgba(34, 211, 238, 0.5)" strokeWidth="1" />
+                    <line x1="28" y1={25 + i * 18.75} x2="32" y2={25 + i * 18.75}
+                        stroke="rgba(34, 211, 238, 0.5)" strokeWidth="1" />
+                </g>
+            ))}
+        </>
+    );
+});
+
 /**
  * Vertical Power Gauge - Like the left side gauge in reference
  */
-function VerticalPowerGauge() {
+const VerticalPowerGauge = memo(function VerticalPowerGauge() {
     const [powerLevel, setPowerLevel] = useState(397);
 
     useEffect(() => {
+        // Slower interval for better performance
         const interval = setInterval(() => {
             setPowerLevel(prev => Math.max(350, Math.min(420, prev + Math.floor(Math.random() * 10 - 5))));
-        }, 800);
+        }, 1200);
         return () => clearInterval(interval);
     }, []);
 
@@ -55,15 +73,8 @@ function VerticalPowerGauge() {
                     transform="translate(0, 155) scale(1, -1)"
                 />
 
-                {/* Tick marks */}
-                {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                    <g key={i}>
-                        <line x1="8" y1={25 + i * 18.75} x2="12" y2={25 + i * 18.75}
-                            stroke="rgba(34, 211, 238, 0.5)" strokeWidth="1" />
-                        <line x1="28" y1={25 + i * 18.75} x2="32" y2={25 + i * 18.75}
-                            stroke="rgba(34, 211, 238, 0.5)" strokeWidth="1" />
-                    </g>
-                ))}
+                {/* Tick marks - memoized */}
+                <PowerGaugeTickMarks />
 
                 {/* Gradient definition */}
                 <defs>
@@ -81,7 +92,7 @@ function VerticalPowerGauge() {
             </div>
         </motion.div>
     );
-}
+});
 
 /**
  * Target Found Indicator - Like "TARGET FOUND" text in reference

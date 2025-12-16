@@ -3,9 +3,9 @@
  * @description Landing section with pilot helmet HUD effect
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useCallback, memo } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronDown, Github, Linkedin, Mail, MapPin, Crosshair, FileText, Cpu, Wifi, Shield } from 'lucide-react';
+import { ChevronDown, Github, Linkedin, Mail, MapPin, FileText, Cpu, Wifi, Shield, Crosshair } from 'lucide-react';
 import { PilotHUDBackground } from '../three/PilotHUDBackground';
 import { TypewriterText } from '../ui';
 import { Button } from '../ui';
@@ -18,7 +18,7 @@ const ROLES = [
     'Full-Stack Developer',
 ];
 
-// Letter animation for "WOW" effect
+// Letter animation for "WOW" effect - memoized outside component
 const letterVariants = {
     hidden: { opacity: 0, y: 50, rotateX: -90 },
     visible: (i: number) => ({
@@ -33,30 +33,68 @@ const letterVariants = {
     }),
 };
 
+// Memoized floating particles - generated once
+const FloatingParticles = memo(function FloatingParticles() {
+    // Generate particle data once using useMemo
+    const particleData = useMemo(() => 
+        [...Array(12)].map((_, i) => ({
+            id: i,
+            initialX: Math.random() * 1000,
+            initialY: Math.random() * 800,
+            animateY: Math.random() * -500 - 100,
+            duration: 5 + Math.random() * 5,
+            delay: Math.random() * 5,
+        })), []
+    );
+
+    return (
+        <>
+            {particleData.map((p) => (
+                <motion.div
+                    key={p.id}
+                    className="absolute w-1 h-1 bg-cyan-400/60 rounded-full z-15"
+                    initial={{ x: p.initialX, y: p.initialY }}
+                    animate={{ y: [null, p.animateY], opacity: [0, 1, 0] }}
+                    transition={{ duration: p.duration, repeat: Infinity, delay: p.delay }}
+                />
+            ))}
+        </>
+    );
+});
+
 /**
  * Hero section with 3D scene and animated content
  */
 export function HeroSection() {
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
+    // Throttled mouse move handler
     useEffect(() => {
+        let ticking = false;
+        
         const handleMouseMove = (e: MouseEvent) => {
-            const { clientX, clientY } = e;
-            const x = (clientX / window.innerWidth - 0.5) * 20;
-            const y = (clientY / window.innerHeight - 0.5) * 20;
-            setMousePosition({ x, y });
+            if (!ticking) {
+                requestAnimationFrame(() => {
+                    const { clientX, clientY } = e;
+                    const x = (clientX / window.innerWidth - 0.5) * 20;
+                    const y = (clientY / window.innerHeight - 0.5) * 20;
+                    setMousePosition({ x, y });
+                    ticking = false;
+                });
+                ticking = true;
+            }
         };
 
-        window.addEventListener('mousemove', handleMouseMove);
+        window.addEventListener('mousemove', handleMouseMove, { passive: true });
         return () => window.removeEventListener('mousemove', handleMouseMove);
     }, []);
 
-    const handleScrollDown = () => {
+    const handleScrollDown = useCallback(() => {
         const aboutSection = document.getElementById('about');
         if (aboutSection) {
             aboutSection.scrollIntoView({ behavior: 'smooth' });
         }
-    };
+    }, []);
 
     const greeting = "Hi, I'm";
     const name = PERSONAL_INFO.name.split(' ').slice(-1)[0];
@@ -91,26 +129,8 @@ export function HeroSection() {
             {/* Gradient overlays */}
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-gray-950/50 to-gray-950 z-10 pointer-events-none" />
 
-            {/* Floating particles - Cyan themed */}
-            {[...Array(20)].map((_, i) => (
-                <motion.div
-                    key={i}
-                    className="absolute w-1 h-1 bg-cyan-400/60 rounded-full z-15"
-                    initial={{
-                        x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1000),
-                        y: Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 800),
-                    }}
-                    animate={{
-                        y: [null, Math.random() * -500 - 100],
-                        opacity: [0, 1, 0],
-                    }}
-                    transition={{
-                        duration: 5 + Math.random() * 5,
-                        repeat: Infinity,
-                        delay: Math.random() * 5,
-                    }}
-                />
-            ))}
+            {/* Floating particles - Memoized component */}
+            <FloatingParticles />
 
             {/* Content with parallax */}
             <motion.div

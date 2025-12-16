@@ -90,7 +90,7 @@ export const EXPERIENCES: Experience[] = [
         position: 'Assistant Manager (Project Coordinator & Business Analyst)',
         startDate: 'April 2025',
         endDate: 'Present',
-        logo: '/src/assets/logos/companies/LCLogo.png',
+        logo: '/assets/logos/companies/LCLogo.png',
         responsibilities: [
             'Coordinated project lifecycles for Web3 Blockchain and AI training programs, managing schedules and resource allocation',
             'Acted as a liaison between Subject Matter Experts, Management, and Stakeholders to gather requirements',
@@ -116,7 +116,7 @@ export const EXPERIENCES: Experience[] = [
         position: 'Software Engineering Intern',
         startDate: 'July 2024',
         endDate: 'March 2025',
-        logo: '/src/assets/logos/companies/NashLogo.png',
+        logo: '/assets/logos/companies/NashLogo.png',
         responsibilities: [
             'Served as both Developer and Assistant PM for training projects (TCG Shop, Asset Management)',
             'Led Agile/Scrum workflows, managed backlog refinement using Azure DevOps',
@@ -142,7 +142,7 @@ export const EXPERIENCES: Experience[] = [
         position: 'Teaching Assistant - Basic Programming Course',
         startDate: '2022',
         endDate: '2023',
-        logo: '/src/assets/logos/companies/VLULogo.png',
+        logo: '/assets/logos/companies/VLULogo.png',
         responsibilities: [
             'Assisted lecturer in delivering course content through programming exercises',
             'Provided personalized support to students on fundamental programming principles',

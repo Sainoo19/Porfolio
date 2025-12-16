@@ -94,38 +94,6 @@ const VerticalPowerGauge = memo(function VerticalPowerGauge() {
     );
 });
 
-/**
- * Target Found Indicator - Like "TARGET FOUND" text in reference
- */
-function TargetFoundIndicator() {
-    return (
-        <motion.div
-            className="absolute right-8 bottom-1/3"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.5 }}
-        >
-            <motion.div
-                className="text-right"
-                animate={{ opacity: [0.7, 1, 0.7] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-            >
-                <div className="text-2xl md:text-3xl font-bold font-['Orbitron'] tracking-wider">
-                    <span className="text-orange-500">TARGET</span>
-                </div>
-                <div className="text-2xl md:text-3xl font-bold font-['Orbitron'] tracking-wider -mt-1">
-                    <span className="text-red-500">FOUND</span>
-                </div>
-            </motion.div>
-
-            {/* Decorative brackets */}
-            <svg className="absolute -left-4 top-0 w-3 h-full" viewBox="0 0 12 60">
-                <path d="M12 0 L0 10 L0 50 L12 60" stroke="rgba(249, 115, 22, 0.6)" strokeWidth="2" fill="none" />
-            </svg>
-        </motion.div>
-    );
-}
-
 
 /**
  * Enhanced Central Scanner with arrow rings - Like main circular HUD in reference

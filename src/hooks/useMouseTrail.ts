@@ -31,7 +31,6 @@ export function useMouseTrail() {
     const particleIdRef = useRef(0);
     const lastPositionRef = useRef({ x: 0, y: 0 });
     const lastTimeRef = useRef(0);
-    const pendingParticlesRef = useRef<Particle[]>([]);
     const cleanupTimersRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
 
     // Batch cleanup function

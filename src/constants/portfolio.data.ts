@@ -52,44 +52,44 @@ export const PERSONAL_INFO: PersonalInfo = {
 
 export const SKILLS: Skill[] = [
     // Programming Languages
-    { id: 'csharp', name: 'C#', category: 'language' },
-    { id: 'java', name: 'Java', category: 'language' },
-    { id: 'javascript', name: 'JavaScript', category: 'language' },
-    { id: 'typescript', name: 'TypeScript', category: 'language' },
+    { id: 'csharp', name: 'C#', category: 'language', proficiency: 90 },
+    { id: 'java', name: 'Java', category: 'language', proficiency: 85 },
+    { id: 'javascript', name: 'JavaScript', category: 'language', proficiency: 88 },
+    { id: 'typescript', name: 'TypeScript', category: 'language', proficiency: 87 },
 
     // Frameworks
-    { id: 'react', name: 'React', category: 'framework' },
-    { id: 'nodejs', name: 'Node.js', category: 'framework' },
-    { id: 'dotnet', name: '.NET Framework & Core', category: 'framework' },
-    { id: 'spring', name: 'Spring Boot', category: 'framework' },
+    { id: 'react', name: 'React', category: 'framework', proficiency: 90 },
+    { id: 'nodejs', name: 'Node.js', category: 'framework', proficiency: 82 },
+    { id: 'dotnet', name: '.NET Framework & Core', category: 'framework', proficiency: 88 },
+    { id: 'spring', name: 'Spring Boot', category: 'framework', proficiency: 80 },
 
     // Databases
-    { id: 'sql-server', name: 'SQL Server', category: 'database' },
-    { id: 'mysql', name: 'MySQL', category: 'database' },
-    { id: 'mongodb', name: 'MongoDB', category: 'database' },
+    { id: 'sql-server', name: 'SQL Server', category: 'database', proficiency: 85 },
+    { id: 'mysql', name: 'MySQL', category: 'database', proficiency: 82 },
+    { id: 'mongodb', name: 'MongoDB', category: 'database', proficiency: 78 },
 
     // Tools
-    { id: 'git', name: 'Git', category: 'tool' },
-    { id: 'azure-devops', name: 'Azure DevOps', category: 'tool' },
-    { id: 'jira', name: 'Jira', category: 'tool' },
-    { id: 'figma', name: 'Figma', category: 'tool' },
-    { id: 'lark-suite', name: 'Lark Suite', category: 'tool' },
+    { id: 'git', name: 'Git', category: 'tool', proficiency: 90 },
+    { id: 'azure-devops', name: 'Azure DevOps', category: 'tool', proficiency: 84 },
+    { id: 'jira', name: 'Jira', category: 'tool', proficiency: 86 },
+    { id: 'figma', name: 'Figma', category: 'tool', proficiency: 75 },
+    { id: 'lark-suite', name: 'Lark Suite', category: 'tool', proficiency: 80 },
 
     // Methodologies
-    { id: 'agile', name: 'Agile/Scrum', category: 'methodology' },
-    { id: 'clean-arch', name: 'Clean Architecture', category: 'methodology' },
-    { id: 'oop', name: 'OOP', category: 'methodology' },
-    { id: 'solid', name: 'SOLID Principles', category: 'methodology' },
-    { id: 'tdd', name: 'Test-Driven Development', category: 'methodology' },
-    { id: 'waterfall', name: 'Waterfall', category: 'methodology' },
+    { id: 'agile', name: 'Agile/Scrum', category: 'methodology', proficiency: 92 },
+    { id: 'clean-arch', name: 'Clean Architecture', category: 'methodology', proficiency: 85 },
+    { id: 'oop', name: 'OOP', category: 'methodology', proficiency: 90 },
+    { id: 'solid', name: 'SOLID Principles', category: 'methodology', proficiency: 88 },
+    { id: 'tdd', name: 'Test-Driven Development', category: 'methodology', proficiency: 80 },
+    { id: 'waterfall', name: 'Waterfall', category: 'methodology', proficiency: 82 },
 
     // Soft Skills
-    { id: 'project-mgmt', name: 'Project Management', category: 'soft-skill' },
-    { id: 'business-analysis', name: 'Business Analysis', category: 'soft-skill' },
-    { id: 'stakeholder-comm', name: 'Stakeholder Communication', category: 'soft-skill' },
-    { id: 'risk-mgmt', name: 'Risk Management', category: 'soft-skill' },
-    { id: 'time-mgmt', name: 'Time Management', category: 'soft-skill' },
-    { id: 'problem-solving', name: 'Problem Solving', category: 'soft-skill' },
+    { id: 'project-mgmt', name: 'Project Management', category: 'soft-skill', proficiency: 88 },
+    { id: 'business-analysis', name: 'Business Analysis', category: 'soft-skill', proficiency: 86 },
+    { id: 'stakeholder-comm', name: 'Stakeholder Communication', category: 'soft-skill', proficiency: 90 },
+    { id: 'risk-mgmt', name: 'Risk Management', category: 'soft-skill', proficiency: 84 },
+    { id: 'time-mgmt', name: 'Time Management', category: 'soft-skill', proficiency: 88 },
+    { id: 'problem-solving', name: 'Problem Solving', category: 'soft-skill', proficiency: 90 },
 ];
 
 export const EXPERIENCES: Experience[] = [

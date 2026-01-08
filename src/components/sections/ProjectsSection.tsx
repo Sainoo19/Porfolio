@@ -63,7 +63,7 @@ function ProjectCard({ project, index }: ProjectCardProps) {
                 transformStyle: 'preserve-3d',
                 perspective: '1000px',
             }}
-            className="group relative"
+            className="group relative h-full flex flex-col"
         >
             <motion.div
                 animate={{
@@ -72,7 +72,7 @@ function ProjectCard({ project, index }: ProjectCardProps) {
                         : '0 10px 40px -15px rgba(0, 0, 0, 0.3)',
                 }}
                 transition={{ duration: 0.3 }}
-                className="relative overflow-hidden border border-cyan-500/20 hover:border-cyan-500/50 transition-all duration-500"
+                className="relative overflow-hidden border border-cyan-500/20 hover:border-cyan-500/50 transition-all duration-500 h-full flex flex-col"
                 style={{
                     clipPath: 'polygon(0 16px, 16px 0, calc(100% - 16px) 0, 100% 16px, 100% calc(100% - 16px), calc(100% - 16px) 100%, 16px 100%, 0 calc(100% - 16px))',
                     background: 'linear-gradient(to bottom right, rgba(8, 47, 73, 0.5), rgba(15, 23, 42, 0.7))'
@@ -120,7 +120,7 @@ function ProjectCard({ project, index }: ProjectCardProps) {
                         className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/80 to-transparent flex items-end justify-center pb-4"
                     >
                         <div className="flex gap-3">
-                            {project.links.github && (
+                            {project.links.github ? (
                                 <motion.a
                                     href={project.links.github}
                                     target="_blank"
@@ -132,6 +132,16 @@ function ProjectCard({ project, index }: ProjectCardProps) {
                                 >
                                     <Github size={18} />
                                 </motion.a>
+                            ) : (
+                                <motion.div
+                                    whileHover={{ scale: 1.05 }}
+                                    className="px-3 py-2 bg-red-500/10 backdrop-blur-sm border border-red-500/30 text-red-400 text-xs font-mono uppercase flex items-center gap-2"
+                                    style={{ clipPath: 'polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%)' }}
+                                    title="Source code not available due to company policy"
+                                >
+                                    <Github size={14} />
+                                    <span>Restricted</span>
+                                </motion.div>
                             )}
                             {project.links.demo && (
                                 <motion.a
@@ -173,15 +183,15 @@ function ProjectCard({ project, index }: ProjectCardProps) {
 
                     {/* Role badge */}
                     <div
-                        className="absolute top-4 left-4 px-3 py-1 bg-magenta-500/80 backdrop-blur-sm border border-magenta-400/50"
-                        style={{ clipPath: 'polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%)' }}
+                        className="absolute top-4 left-4 px-2 py-1 bg-magenta-500/80 backdrop-blur-sm border border-magenta-400/50 max-w-[calc(100%-120px)]"
+                        style={{ clipPath: 'polygon(4px 0, 100% 0, calc(100% - 4px) 100%, 0 100%)' }}
                     >
-                        <span className="text-white text-xs font-mono uppercase">{project.role}</span>
+                        <span className="text-white text-[10px] font-mono uppercase truncate block">{project.role}</span>
                     </div>
                 </div>
 
                 {/* Content */}
-                <div className="p-6">
+                <div className="p-6 flex-1 flex flex-col">
                     {/* System ID header */}
                     <div className="flex items-center justify-between mb-3 pb-2 border-b border-cyan-500/10">
                         <span className="text-[10px] font-mono text-cyan-600">{systemId}</span>
@@ -205,7 +215,7 @@ function ProjectCard({ project, index }: ProjectCardProps) {
                     </p>
 
                     {/* Tech stack */}
-                    <div className="space-y-3 mb-4">
+                    <div className="space-y-3 mb-4 flex-1">
                         <div>
                             <p className="text-[10px] text-cyan-600 mb-2 font-mono">[FRONTEND_SYS]</p>
                             <div className="flex flex-wrap gap-2">
@@ -260,6 +270,9 @@ function ProjectCard({ project, index }: ProjectCardProps) {
  * Projects section - Deployed Systems Registry
  */
 export function ProjectsSection() {
+    const [showAll, setShowAll] = useState(false);
+    const displayedProjects = showAll ? PROJECTS : PROJECTS.slice(0, 3);
+
     return (
         <section id="projects" className="relative py-24 md:py-32 overflow-hidden">
             {/* HUD Background grid */}
@@ -278,7 +291,7 @@ export function ProjectsSection() {
                         <span className="text-gray-600">/&gt;</span>
                     </div>
                     <SectionTitle
-                        title="Mission Archives"
+                        title="Mission Archived"
                         subtitle="Deployed systems demonstrating technical capability and leadership"
                     />
                     <div className="flex justify-center items-center gap-4 mt-4 text-[10px] font-mono">
@@ -294,12 +307,30 @@ export function ProjectsSection() {
                     initial="hidden"
                     whileInView="visible"
                     viewport={{ once: true }}
-                    className="grid md:grid-cols-2 gap-8"
+                    className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
                 >
-                    {PROJECTS.map((project, index) => (
+                    {displayedProjects.map((project, index) => (
                         <ProjectCard key={project.id} project={project} index={index} />
                     ))}
                 </motion.div>
+
+                {/* View More Button */}
+                {PROJECTS.length > 3 && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        className="mt-12 text-center"
+                    >
+                        <Button
+                            variant="secondary"
+                            size="lg"
+                            onClick={() => setShowAll(!showAll)}
+                        >
+                            {showAll ? 'SHOW LESS' : `VIEW MORE (${PROJECTS.length - 3})`}
+                        </Button>
+                    </motion.div>
+                )}
 
                 {/* Call to action */}
                 <motion.div

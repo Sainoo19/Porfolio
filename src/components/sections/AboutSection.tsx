@@ -30,7 +30,7 @@ const HIGHLIGHTS = [
     {
         icon: GraduationCap,
         title: 'Software Engineering',
-        description: `Van Lang University - GPA: ${EDUCATION[0].gpa}/4`,
+        description: `Van Lang University - GPA: ${EDUCATION[0].gpa}/4.0`,
         color: 'text-cyan-400',
         bgColor: 'bg-cyan-500/20',
         borderColor: 'border-cyan-500/30',

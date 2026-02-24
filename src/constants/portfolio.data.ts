@@ -104,8 +104,8 @@ export const EXPERIENCES: Experience[] = [
     {
         id: 'nashtech',
         company: 'NashTech',
-        position: 'Software Engineering Intern',
-        startDate: 'July 2024',
+        position: 'Software Engineering / Pm Assistant',
+        startDate: 'March 2024',
         endDate: 'March 2025',
         logo: NashLogo,
         responsibilities: [
@@ -131,8 +131,8 @@ export const EXPERIENCES: Experience[] = [
         id: 'vlu-ta',
         company: 'Van Lang University',
         position: 'Teaching Assistant - Basic Programming Course',
-        startDate: '2022',
-        endDate: '2023',
+        startDate: 'September 2022',
+        endDate: 'September 2023',
         logo: VLULogo,
         responsibilities: [
             'Assisted lecturer in delivering course content through programming exercises',
@@ -178,7 +178,7 @@ export const PROJECTS: Project[] = [
         role: 'Full-stack Developer',
         description: 'A professional photography platform. Collaborated with the engineering team to apply modern technologies in a production environment.',
         teamSize: 8,
-        startDate: 'Nov 2024',
+        startDate: 'July 2024',
         endDate: 'March 2025',
         techStack: {
             frontend: ['React Vite', 'TypeScript'],
@@ -202,8 +202,8 @@ export const PROJECTS: Project[] = [
         role: 'Developer & Assistant PM',
         description: 'An e-commerce platform for trading card games. Led Agile workflows and managed backlog refinement.', // [cite: 49]
         teamSize: 4,
-        startDate: 'July 2024',
-        endDate: 'September 2024',
+        startDate: 'March 2024',
+        endDate: 'April 2024',
         techStack: {
             frontend: ['Razor Views (.NET MVC)', 'HTML/CSS', 'JavaScript'],
             backend: ['.NET Core MVC', 'C#'],
@@ -226,8 +226,8 @@ export const PROJECTS: Project[] = [
         role: 'Backend Developer & Assistant PM',
         description: 'Internal system for managing IT assets. Maintained system and coordinated sprint tasks.', // [cite: 49]
         teamSize: 5,
-        startDate: 'August 2024',
-        endDate: 'March 2025',
+        startDate: 'May 2024',
+        endDate: 'June 2024',
         techStack: {
             frontend: ['React', 'TypeScript'],
             backend: ['.NET Core', 'C#', 'RESTful API'],

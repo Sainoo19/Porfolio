@@ -342,14 +342,14 @@ export function ProjectsSection() {
                     <p className="text-gray-400 mb-6 font-['Rajdhani']">
                         <span className="text-cyan-500 font-mono">&gt;</span> Access full system repository for additional deployments
                     </p>
-                    <Button
+                    {/* <Button
                         variant="secondary"
                         size="lg"
                         leftIcon={<Github size={18} />}
                         onClick={() => window.open('https://github.com/Sainoo19', '_blank')}
                     >
                         ACCESS REPOSITORY
-                    </Button>
+                    </Button> */}
                 </motion.div>
 
                 {/* Bottom status bar */}

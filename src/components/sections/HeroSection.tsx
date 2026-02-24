@@ -5,7 +5,7 @@
 
 import { useEffect, useState, useMemo, useCallback, memo } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronDown, Github, Linkedin, Mail, MapPin, FileText, Cpu, Wifi, Shield, Crosshair } from 'lucide-react';
+import { ChevronDown, Mail, MapPin, FileText, Cpu, Wifi, Shield, Crosshair } from 'lucide-react';
 import { PilotHUDBackground } from '../three/PilotHUDBackground';
 import { TypewriterText } from '../ui';
 import { Button } from '../ui';
@@ -36,7 +36,7 @@ const letterVariants = {
 // Memoized floating particles - generated once
 const FloatingParticles = memo(function FloatingParticles() {
     // Generate particle data once using useMemo
-    const particleData = useMemo(() => 
+    const particleData = useMemo(() =>
         [...Array(12)].map((_, i) => ({
             id: i,
             initialX: Math.random() * 1000,
@@ -71,7 +71,7 @@ export function HeroSection() {
     // Throttled mouse move handler
     useEffect(() => {
         let ticking = false;
-        
+
         const handleMouseMove = (e: MouseEvent) => {
             if (!ticking) {
                 requestAnimationFrame(() => {
@@ -167,7 +167,7 @@ export function HeroSection() {
                 </motion.div>
 
                 {/* Pilot ID Header */}
-                <motion.div 
+                <motion.div
                     variants={FADE_IN_VARIANTS}
                     className="mb-4 flex items-center justify-center gap-4"
                 >
@@ -210,9 +210,9 @@ export function HeroSection() {
                         }}
                         style={{ lineHeight: 1.2 }}
                     >
-                        <span 
+                        <span
                             className="bg-gradient-to-r from-cyan-400 via-magenta-400 to-cyan-400 bg-clip-text text-transparent"
-                            style={{ 
+                            style={{
                                 textShadow: '0 0 40px rgba(34, 211, 238, 0.5)',
                                 filter: 'drop-shadow(0 0 20px rgba(34, 211, 238, 0.3))'
                             }}
@@ -264,7 +264,7 @@ export function HeroSection() {
                 </motion.p>
 
                 {/* Status indicators - Mecha style */}
-                <motion.div 
+                <motion.div
                     variants={FADE_IN_VARIANTS}
                     className="flex items-center justify-center gap-6 mb-8 text-xs font-mono"
                 >
@@ -273,7 +273,7 @@ export function HeroSection() {
                         { icon: Wifi, label: 'NET', status: 'ONLINE', color: 'text-cyan-400' },
                         { icon: Shield, label: 'DEF', status: 'ACTIVE', color: 'text-magenta-400' },
                     ].map(({ icon: Icon, label, status, color }) => (
-                        <motion.div 
+                        <motion.div
                             key={label}
                             className="flex items-center gap-2 text-gray-500"
                             whileHover={{ scale: 1.1 }}
@@ -341,8 +341,8 @@ export function HeroSection() {
                 {/* Social Links - HUD Style */}
                 <motion.div variants={FADE_IN_VARIANTS} className="flex items-center justify-center gap-4">
                     {[
-                        { icon: Github, href: 'https://github.com/Sainoo19', label: 'GitHub', color: 'hover:text-cyan-400 hover:border-cyan-500/60' },
-                        { icon: Linkedin, href: 'https://linkedin.com/in/nvtrung19', label: 'LinkedIn', color: 'hover:text-cyan-400 hover:border-cyan-500/60' },
+                        //{ icon: Github, href: 'https://github.com/Sainoo19', label: 'GitHub', color: 'hover:text-cyan-400 hover:border-cyan-500/60' },
+                        //{ icon: Linkedin, href: 'https://linkedin.com/in/nvtrung19', label: 'LinkedIn', color: 'hover:text-cyan-400 hover:border-cyan-500/60' },
                         { icon: Mail, href: 'mailto:nvtrung19.work@gmail.com', label: 'Email', color: 'hover:text-magenta-400 hover:border-magenta-500/60' },
                     ].map(({ icon: Icon, href, label, color }) => (
                         <motion.a

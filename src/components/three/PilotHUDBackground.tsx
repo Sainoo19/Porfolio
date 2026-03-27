@@ -1182,7 +1182,7 @@ export function PilotHUDBackground({ className = '' }: PilotHUDBackgroundProps) 
                 <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
                     {/* Top frame arc */}
                     <path
-                        d="M 0 80 Q 50% 20, 100% 80"
+                        d="M 0 80 Q 50 20, 100 80"
                         stroke="rgba(71, 85, 105, 0.5)"
                         strokeWidth="2"
                         fill="none"

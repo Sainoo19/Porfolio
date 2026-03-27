@@ -9,11 +9,19 @@ import { ExternalLink, Github, Users, Calendar, Folder, Cpu } from 'lucide-react
 import { SectionTitle, TechBadge, Button } from '../ui';
 import { PROJECTS } from '../../constants';
 import { SCALE_VARIANTS, STAGGER_CONTAINER_VARIANTS } from '../../constants';
-import type { Project } from '../../types';
+import type { Project, TechCategory } from '../../types';
 
 interface ProjectCardProps {
     project: Project;
     index: number;
+}
+
+function flattenTechCategory(category: TechCategory): string[] {
+    if (Array.isArray(category)) {
+        return category;
+    }
+
+    return Object.values(category).flat();
 }
 
 /**
@@ -24,6 +32,8 @@ function ProjectCard({ project, index }: ProjectCardProps) {
     const cardRef = useRef<HTMLDivElement>(null);
     const [rotateX, setRotateX] = useState(0);
     const [rotateY, setRotateY] = useState(0);
+    const frontendTech = flattenTechCategory(project.techStack.frontend);
+    const backendTech = flattenTechCategory(project.techStack.backend);
 
     const systemId = `SYS-${String(index + 1).padStart(3, '0')}-${project.id.toUpperCase().slice(0, 4)}`;
 
@@ -219,16 +229,16 @@ function ProjectCard({ project, index }: ProjectCardProps) {
                         <div>
                             <p className="text-[10px] text-cyan-600 mb-2 font-mono">[FRONTEND_SYS]</p>
                             <div className="flex flex-wrap gap-2">
-                                {project.techStack.frontend.map((tech) => (
-                                    <TechBadge key={tech} name={tech} size="sm" />
+                                {frontendTech.map((tech: string, techIndex: number) => (
+                                    <TechBadge key={`${tech}-${techIndex}`} name={tech} size="sm" />
                                 ))}
                             </div>
                         </div>
                         <div>
                             <p className="text-[10px] text-cyan-600 mb-2 font-mono">[BACKEND_SYS]</p>
                             <div className="flex flex-wrap gap-2">
-                                {project.techStack.backend.map((tech) => (
-                                    <TechBadge key={tech} name={tech} size="sm" variant="outline" />
+                                {backendTech.map((tech: string, techIndex: number) => (
+                                    <TechBadge key={`${tech}-${techIndex}`} name={tech} size="sm" variant="outline" />
                                 ))}
                             </div>
                         </div>
@@ -291,7 +301,7 @@ export function ProjectsSection() {
                         <span className="text-gray-600">/&gt;</span>
                     </div>
                     <SectionTitle
-                        title="Mission Archived"
+                        title="Additional Mission Archived"
                         subtitle="Deployed systems demonstrating technical capability and leadership"
                     />
                     <div className="flex justify-center items-center gap-4 mt-4 text-[10px] font-mono">

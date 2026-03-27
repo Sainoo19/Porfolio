@@ -78,9 +78,9 @@ export const EXPERIENCES: Experience[] = [
     {
         id: 'learning-chain',
         company: 'Learning Chain',
-        position: 'Assistant Manager (Project Coordinator & Business Analyst)',
+        position: 'ASSISTANT OPERATIONS DIRECTOR(Project Coordinator & Business Analyst)',
         startDate: 'April 2025',
-        endDate: 'Present',
+        endDate: 'December 2025',
         logo: LCLogo,
         responsibilities: [
             'Coordinated project lifecycles for Web3 Blockchain and AI training programs, managing schedules and resource allocation',
@@ -104,7 +104,7 @@ export const EXPERIENCES: Experience[] = [
     {
         id: 'nashtech',
         company: 'NashTech',
-        position: 'Software Engineering / Pm Assistant',
+        position: 'Software Engineering / PM Assistant',
         startDate: 'March 2024',
         endDate: 'March 2025',
         logo: NashLogo,
@@ -147,13 +147,39 @@ export const EXPERIENCES: Experience[] = [
 
 export const PROJECTS: Project[] = [
     {
+        id: 'amazing-group',
+        title: 'English Language Center Management Website - ERP System',
+        role: 'Business Analyst - Freelance Remote',
+        description: 'A comprehensive ERP system for managing English language centers. Gathered requirements, coordinated development, and implemented Agile workflows.', // [cite: 34, 40, 42]
+        teamSize: 6,
+        startDate: 'January 2026',
+        endDate: 'Present',
+        techStack: {
+            landingpage: ['WordPress'],
+            frontend: ['React Vite', 'React'],
+            backend: ['Express.js', 'RESTful API'],
+            database: ['MongoDB'],
+            tools: ['Jira', 'Notion', 'Agile Methodology', 'Figma', 'Microsoft Office', 'Google Workspace', 'AI Tools & Agent Assistants'],
+        },
+        links: {
+            demo: 'https://amazing.edu.vn/',
+
+        },
+        highlights: [
+            'Spearheaded the transition to a structured Agile framework', // Thành tựu process
+            'Developed an internal website to centralize training resources', // Thành tựu kỹ thuật
+            'Coordinated project lifecycles for Web3 & AI training programs',
+            'Source code / Internal tools are protected by NDA', // Ghi chú bảo mật
+        ],
+    },
+    {
         id: 'learning-chain',
         title: 'Learning Chain Platform',
         role: 'Assistant Manager (Project Coordinator & BA)',
         description: 'Web3 Blockchain and AI training platform. Coordinated project lifecycles, standardized Agile workflows, and built internal resource hubs.', // [cite: 34, 40, 42]
         teamSize: 20,
         startDate: 'April 2025',
-        endDate: 'Present',
+        endDate: 'December 2025',
         techStack: {
 
             frontend: ['React Vite', 'React'],
@@ -174,17 +200,32 @@ export const PROJECTS: Project[] = [
     },
     {
         id: 'zenfolio',
-        title: 'Zenfolio (Nash Tech)',
+        title: 'Zenfolio (NashTech)',
         role: 'Full-stack Developer',
         description: 'A professional photography platform. Collaborated with the engineering team to apply modern technologies in a production environment.',
         teamSize: 8,
         startDate: 'July 2024',
         endDate: 'March 2025',
         techStack: {
-            frontend: ['React Vite', 'TypeScript'],
-            backend: ['.NET Core', 'RESTful API'],
-            database: ['SQL Server'],
-            tools: ['Azure DevOps', 'Clean Architecture', 'xUnit'],
+            landingpage: ["WordPress", "Elementor"],
+            frontend: {
+                core: ["React Vite", "TypeScript"],
+                stateManagement: ["Zustand", "Redux Toolkit"],
+                dragAndDrop: ["dnd-kit", "React-beautiful-dnd"],
+                styling: ["Tailwind CSS", "Styled Components"]
+            },
+            backend: {
+                framework: [".NET 8 Core"],
+                architecture: ["Clean Architecture", "CQRS", "Microservices (Optional)"],
+                api: ["RESTful API", "GraphQL (for Dynamic Queries)"],
+                mediaProcessing: ["Azure Functions", "ImageMagick", "CDN (Azure Front Door)"]
+            },
+            database: {
+                relational: ["SQL Server (User, Orders, Subscriptions)"],
+                document: ["MongoDB or CosmosDB (Storing Web Layouts/JSON Config)"],
+                cache: ["Redis (Caching Website Previews)"]
+            },
+            tools: ["Azure DevOps", "xUnit", "Docker & Kubernetes", "Terraform (IaC)"]
         },
         links: {
             demo: 'https://zenfolio.com/',

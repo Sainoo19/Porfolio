@@ -222,9 +222,9 @@ export function ExperienceSection() {
                         </span>
                         <span className="text-gray-300 font-['Rajdhani'] text-sm">
                             <span className="text-cyan-500 font-mono text-xs">STATUS:</span> Active at{' '}
-                            <span className="text-cyan-400 font-['Orbitron'] font-medium">Learning Chain</span>
+                            <span className="text-cyan-400 font-['Orbitron'] font-medium">None</span>
                             <span className="text-gray-500 mx-2">|</span>
-                            <span className="text-magenta-400">Assistant Manager</span>
+                            <span className="text-magenta-400">Free Agent</span>
                         </span>
                     </motion.div>
                 </motion.div>

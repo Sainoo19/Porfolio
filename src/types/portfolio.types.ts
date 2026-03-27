@@ -69,10 +69,13 @@ export interface Project {
     readonly thumbnail?: string;
 }
 
+export type TechCategory = string[] | Record<string, string[]>;
+
 export interface TechStack {
-    readonly frontend: string[];
-    readonly backend: string[];
-    readonly database: string[];
+    readonly landingpage?: string[];
+    readonly frontend: TechCategory;
+    readonly backend: TechCategory;
+    readonly database: TechCategory;
     readonly tools?: string[];
 }
 

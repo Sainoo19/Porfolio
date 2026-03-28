@@ -82,6 +82,8 @@ export interface TechStack {
 export interface ProjectLinks {
     readonly demo?: string;
     readonly github?: string;
+    readonly githubFrontend?: string;
+    readonly githubBackend?: string;
     readonly documentation?: string;
 }
 

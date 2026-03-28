@@ -34,6 +34,17 @@ function ProjectCard({ project, index }: ProjectCardProps) {
     const [rotateY, setRotateY] = useState(0);
     const frontendTech = flattenTechCategory(project.techStack.frontend);
     const backendTech = flattenTechCategory(project.techStack.backend);
+    const githubLinks = [
+        project.links.githubFrontend
+            ? { href: project.links.githubFrontend, label: 'FE', title: 'Frontend Repository' }
+            : null,
+        project.links.githubBackend
+            ? { href: project.links.githubBackend, label: 'BE', title: 'Backend Repository' }
+            : null,
+        project.links.github
+            ? { href: project.links.github, label: 'Repo', title: 'Repository' }
+            : null,
+    ].filter((link): link is { href: string; label: string; title: string } => Boolean(link));
 
     const systemId = `SYS-${String(index + 1).padStart(3, '0')}-${project.id.toUpperCase().slice(0, 4)}`;
 
@@ -130,18 +141,23 @@ function ProjectCard({ project, index }: ProjectCardProps) {
                         className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/80 to-transparent flex items-end justify-center pb-4"
                     >
                         <div className="flex gap-3">
-                            {project.links.github ? (
-                                <motion.a
-                                    href={project.links.github}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    whileHover={{ scale: 1.1 }}
-                                    whileTap={{ scale: 0.9 }}
-                                    className="p-3 bg-cyan-500/10 backdrop-blur-sm border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500 hover:text-slate-900 transition-colors"
-                                    style={{ clipPath: 'polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%)' }}
-                                >
-                                    <Github size={18} />
-                                </motion.a>
+                            {githubLinks.length > 0 ? (
+                                githubLinks.map((githubLink) => (
+                                    <motion.a
+                                        key={`${project.id}-${githubLink.label}`}
+                                        href={githubLink.href}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        whileHover={{ scale: 1.1 }}
+                                        whileTap={{ scale: 0.9 }}
+                                        title={githubLink.title}
+                                        className="px-3 py-2 bg-cyan-500/10 backdrop-blur-sm border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500 hover:text-slate-900 transition-colors text-xs font-mono flex items-center gap-1.5"
+                                        style={{ clipPath: 'polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%)' }}
+                                    >
+                                        <Github size={14} />
+                                        <span>{githubLink.label}</span>
+                                    </motion.a>
+                                ))
                             ) : (
                                 <motion.div
                                     whileHover={{ scale: 1.05 }}

@@ -6,6 +6,7 @@
 import { useEffect, useState, useMemo, useCallback, memo } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronDown, Mail, MapPin, FileText, Cpu, Wifi, Shield, Crosshair } from 'lucide-react';
+import { HeroScene } from '../three/HeroScene';
 import { PilotHUDBackground } from '../three/PilotHUDBackground';
 import { TypewriterText } from '../ui';
 import { Button } from '../ui';
@@ -104,8 +105,11 @@ export function HeroSection() {
             id="home"
             className="relative min-h-screen flex items-center justify-center overflow-hidden"
         >
+            {/* Helmet-view depth scene */}
+            <HeroScene className="z-0 opacity-55" />
+
             {/* Pilot Helmet HUD Background */}
-            <PilotHUDBackground className="z-0" />
+            <PilotHUDBackground className="z-5" />
 
             {/* Animated gradient background - Cyberpunk style */}
             <motion.div

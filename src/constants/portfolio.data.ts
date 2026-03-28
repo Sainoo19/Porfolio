@@ -173,32 +173,6 @@ export const PROJECTS: Project[] = [
         ],
     },
     {
-        id: 'learning-chain',
-        title: 'Learning Chain Platform',
-        role: 'Assistant Manager (Project Coordinator & BA)',
-        description: 'Web3 Blockchain and AI training platform. Coordinated project lifecycles, standardized Agile workflows, and built internal resource hubs.', // [cite: 34, 40, 42]
-        teamSize: 20,
-        startDate: 'April 2025',
-        endDate: 'December 2025',
-        techStack: {
-
-            frontend: ['React Vite', 'React'],
-            backend: ['.NET Core', 'RESTful API'],
-            database: ['Internal Data'],
-            tools: ['Lark Suite', 'Jira', 'Zoom Operations', 'Agile Methodology'],
-        },
-        links: {
-            demo: 'https://learningchain.vn/',
-
-        },
-        highlights: [
-            'Spearheaded the transition to a structured Agile framework', // Thành tựu process
-            'Developed an internal website to centralize training resources', // Thành tựu kỹ thuật
-            'Coordinated project lifecycles for Web3 & AI training programs',
-            'Source code / Internal tools are protected by NDA', // Ghi chú bảo mật
-        ],
-    },
-    {
         id: 'zenfolio',
         title: 'Zenfolio (NashTech)',
         role: 'Full-stack Developer',
@@ -298,8 +272,9 @@ export const PROJECTS: Project[] = [
             tools: ['Momo API', 'GHTK', 'Nodemailer'],
         },
         links: {
-            github: 'https://github.com/Sainoo19/GymZ-Frontend.git',
-            documentation: 'https://drive.google.com/drive/folders/1eq0Wu0XgGS-u7MsiYRsIG6Fu_Y3LvWiF?usp=sharing', // [cite: 72]
+            githubFrontend: 'https://github.com/Sainoo19/GymZ-Frontend.git',
+            githubBackend: 'https://github.com/Sainoo19/GymZ-Backend.git',
+            documentation: 'https://drive.google.com/drive/folders/1RqHnEfCJDFuFyqOwnnewjg1MOr2M1cZi?usp=sharing', // [cite: 72]
         },
         highlights: [
             'Led a team of 5 to deliver a comprehensive system using MERN stack',

@@ -11,6 +11,8 @@ interface PilotHUDBackgroundProps {
     className?: string;
 }
 
+type CombatMode = 'NORMAL' | 'SCAN' | 'COMBAT';
+
 // Memoized tick marks - static content
 const PowerGaugeTickMarks = memo(function PowerGaugeTickMarks() {
     return (
@@ -396,6 +398,165 @@ function RadarDisplay({ position }: { position: 'left' | 'right' }) {
 }
 
 /**
+ * Full Scan Radar with prominent sweeping beam - High-visibility tactical radar
+ */
+function FullScanRadar() {
+    const [enemyBlips, setEnemyBlips] = useState<Array<{ x: number; y: number; id: number }>>([]);
+
+    useEffect(() => {
+        // Generate random enemy blips every 3 seconds
+        const generateBlips = () => {
+            const count = Math.floor(Math.random() * 4) + 2;
+            const newBlips = Array.from({ length: count }, (_, i) => ({
+                id: i,
+                x: 25 + Math.random() * 50,
+                y: 25 + Math.random() * 50,
+            }));
+            setEnemyBlips(newBlips);
+        };
+
+        generateBlips();
+        const interval = setInterval(generateBlips, 3000);
+        return () => clearInterval(interval);
+    }, []);
+
+    return (
+        <motion.div
+            className="absolute left-4 bottom-4 w-64 h-64 md:w-80 md:h-80 z-20"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.4 }}
+        >
+            <svg viewBox="0 0 300 300" className="w-full h-full drop-shadow-lg">
+                {/* Outer frame */}
+                <rect x="10" y="10" width="280" height="280" fill="rgba(2, 6, 23, 0.6)" stroke="rgba(34, 211, 238, 0.5)" strokeWidth="2" />
+
+                {/* Title bar */}
+                <rect x="10" y="10" width="280" height="20" fill="rgba(34, 211, 238, 0.08)" />
+                <text x="90" y="25" fill="rgba(34, 211, 238, 0.8)" fontSize="12" fontFamily="monospace" fontWeight="bold">
+                    FULL_SCAN_RADAR
+                </text>
+
+                {/* Concentric circles */}
+                <circle cx="150" cy="150" r="120" fill="none" stroke="rgba(34, 211, 238, 0.15)" strokeWidth="1" />
+                <circle cx="150" cy="150" r="90" fill="none" stroke="rgba(34, 211, 238, 0.2)" strokeWidth="1.5" />
+                <circle cx="150" cy="150" r="60" fill="none" stroke="rgba(34, 211, 238, 0.15)" strokeWidth="1" />
+                <circle cx="150" cy="150" r="30" fill="none" stroke="rgba(34, 211, 238, 0.1)" strokeWidth="1" />
+
+                {/* Center point - Self position */}
+                <circle cx="150" cy="150" r="5" fill="rgba(34, 211, 238, 1)" />
+                <circle cx="150" cy="150" r="12" fill="none" stroke="rgba(34, 211, 238, 0.6)" strokeWidth="1.5" />
+
+                {/* Cardinal direction markers */}
+                {[
+                    { angle: 0, label: 'N', x: 150, y: 20 },
+                    { angle: 90, label: 'E', x: 280, y: 150 },
+                    { angle: 180, label: 'S', x: 150, y: 280 },
+                    { angle: 270, label: 'W', x: 20, y: 150 },
+                ].map((marker) => (
+                    <g key={marker.label}>
+                        <line x1={marker.x} y1={marker.y} x2="150" y2="150" stroke="rgba(34, 211, 238, 0.2)" strokeWidth="0.5" />
+                        <text x={marker.x} y={marker.y} fill="rgba(34, 211, 238, 0.6)" fontSize="11" fontFamily="monospace" fontWeight="bold" textAnchor="middle" dominantBaseline="middle">
+                            {marker.label}
+                        </text>
+                    </g>
+                ))}
+
+                {/* Degree tick marks (every 15 degrees) */}
+                {Array.from({ length: 24 }).map((_, i) => {
+                    const angle = (i * 15 - 90) * (Math.PI / 180);
+                    const isMajor = i % 2 === 0;
+                    const length = isMajor ? 8 : 4;
+                    const x1 = 150 + (125) * Math.cos(angle);
+                    const y1 = 150 + (125) * Math.sin(angle);
+                    const x2 = 150 + (125 - length) * Math.cos(angle);
+                    const y2 = 150 + (125 - length) * Math.sin(angle);
+
+                    return (
+                        <line
+                            key={i}
+                            x1={x1}
+                            y1={y1}
+                            x2={x2}
+                            y2={y2}
+                            stroke={isMajor ? 'rgba(34, 211, 238, 0.5)' : 'rgba(34, 211, 238, 0.3)'}
+                            strokeWidth={isMajor ? 1.5 : 1}
+                        />
+                    );
+                })}
+
+                {/* Main sweeping radar beam with gradient */}
+                <motion.g
+                    initial={{ rotate: 0 }}
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
+                    style={{ transformOrigin: '150px 150px', transformBox: 'fill-box' } as any}
+                >
+                    {/* Outer sweep shadow */}
+                    <path
+                        d="M 150 150 L 150 40 A 110 110 0 0 1 235 65 Z"
+                        fill="url(#scanGradient)"
+                        opacity="0.45"
+                    />
+                    {/* Bright beam line */}
+                    <line x1="150" y1="150" x2="150" y2="35" stroke="rgba(34, 211, 238, 0.95)" strokeWidth="3" strokeLinecap="round" />
+                    {/* Sweep glow */}
+                    <circle cx="150" cy="150" r="115" fill="none" stroke="rgba(34, 211, 238, 0.2)" strokeWidth="6" opacity="0.4" />
+                </motion.g>
+
+                {/* Enemy blips on radar */}
+                {enemyBlips.map((blip) => (
+                    <g key={blip.id}>
+                        {/* Pulsing red marker */}
+                        <motion.circle
+                            cx={80 + blip.x}
+                            cy={80 + blip.y}
+                            r="4"
+                            fill="rgba(239, 68, 68, 1)"
+                            animate={{ opacity: [0.4, 1, 0.4], r: [4, 6, 4] }}
+                            transition={{ duration: 1.2, repeat: Infinity }}
+                        />
+                        {/* Outer glow */}
+                        <motion.circle
+                            cx={80 + blip.x}
+                            cy={80 + blip.y}
+                            r="8"
+                            fill="none"
+                            stroke="rgba(239, 68, 68, 0.5)"
+                            animate={{ r: [8, 12, 8], opacity: [0.6, 0.1, 0.6] }}
+                            transition={{ duration: 1.5, repeat: Infinity }}
+                        />
+                    </g>
+                ))}
+
+                {/* Friendly blips (blue) */}
+                <circle cx="130" cy="100" r="2.5" fill="rgba(34, 211, 238, 0.8)" />
+                <circle cx="170" cy="120" r="2" fill="rgba(148, 163, 184, 0.6)" />
+                <circle cx="160" cy="170" r="2.5" fill="rgba(34, 211, 238, 0.7)" />
+                <circle cx="120" cy="160" r="2" fill="rgba(148, 163, 184, 0.5)" />
+
+                {/* Gradient definitions */}
+                <defs>
+                    <radialGradient id="scanGradient" cx="0%" cy="0%" r="100%">
+                        <stop offset="0%" stopColor="rgba(34, 211, 238, 0.8)" />
+                        <stop offset="50%" stopColor="rgba(34, 211, 238, 0.4)" />
+                        <stop offset="100%" stopColor="rgba(34, 211, 238, 0)" />
+                    </radialGradient>
+                    <filter id="scanBlur">
+                        <feGaussianBlur in="SourceGraphic" stdDeviation="3" />
+                    </filter>
+                </defs>
+            </svg>
+
+            {/* Label below radar */}
+            <div className="absolute -top-6 left-0 right-0 text-center">
+                <span className="text-[9px] font-mono text-cyan-500/60 tracking-wider">ACTIVE_SCAN_MODE</span>
+            </div>
+        </motion.div>
+    );
+}
+
+/**
  * Circular gauge for mech output/weapon charge
  */
 /**
@@ -686,7 +847,10 @@ function CompassBar() {
 /**
  * Warning Indicators
  */
-function WarningPanel() {
+function WarningPanel({ mode }: { mode: CombatMode }) {
+    const isCombat = mode === 'COMBAT';
+    const isScan = mode === 'SCAN';
+
     return (
         <motion.div
             className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4"
@@ -694,22 +858,26 @@ function WarningPanel() {
             animate={{ opacity: 1 }}
             transition={{ delay: 1.2 }}
         >
-            <div className="flex items-center gap-2 px-3 py-1 bg-green-500/10 border border-green-500/30">
+            <div className={`flex items-center gap-2 px-3 py-1 border ${isCombat ? 'bg-red-500/10 border-red-500/40' : 'bg-green-500/10 border-green-500/30'}`}>
                 <motion.div
-                    className="w-2 h-2 rounded-full bg-green-400"
+                    className={`w-2 h-2 rounded-full ${isCombat ? 'bg-red-400' : 'bg-green-400'}`}
                     animate={{ opacity: [1, 0.5, 1] }}
-                    transition={{ duration: 2, repeat: Infinity }}
+                    transition={{ duration: isCombat ? 0.6 : 2, repeat: Infinity }}
                 />
-                <span className="text-[10px] font-mono text-green-400">SYSTEMS NOMINAL</span>
+                <span className={`text-[10px] font-mono ${isCombat ? 'text-red-300' : 'text-green-400'}`}>
+                    {isCombat ? 'ALERT: HOSTILE LOCK DETECTED' : 'SYSTEMS NOMINAL'}
+                </span>
             </div>
 
-            <div className="flex items-center gap-2 px-3 py-1 bg-cyan-500/10 border border-cyan-500/30">
+            <div className={`flex items-center gap-2 px-3 py-1 border ${isScan ? 'bg-magenta-500/10 border-magenta-500/35' : 'bg-cyan-500/10 border-cyan-500/30'}`}>
                 <motion.div
-                    className="w-2 h-2 rounded-full bg-cyan-400"
+                    className={`w-2 h-2 rounded-full ${isScan ? 'bg-magenta-400' : 'bg-cyan-400'}`}
                     animate={{ opacity: [1, 0.5, 1] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
+                    transition={{ duration: isScan ? 0.8 : 1.5, repeat: Infinity }}
                 />
-                <span className="text-[10px] font-mono text-cyan-400">NEURAL LINK ACTIVE</span>
+                <span className={`text-[10px] font-mono ${isScan ? 'text-magenta-300' : 'text-cyan-400'}`}>
+                    {isScan ? 'WIDE SCAN SWEEP IN PROGRESS' : 'NEURAL LINK ACTIVE'}
+                </span>
             </div>
         </motion.div>
     );
@@ -1122,9 +1290,170 @@ function CircuitTraces() {
 }
 
 /**
+ * Helmet visor frame and glass reflections for immersive cockpit POV.
+ */
+function HelmetVisorOverlay() {
+    return (
+        <div className="absolute inset-0 pointer-events-none z-20">
+            <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at center, rgba(0,0,0,0) 38%, rgba(2,6,23,0.82) 100%)' }} />
+
+            <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-slate-900/95 via-slate-900/70 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-slate-900/95 via-slate-900/65 to-transparent" />
+            <div className="absolute top-0 bottom-0 left-0 w-14 bg-gradient-to-r from-slate-900/90 to-transparent" />
+            <div className="absolute top-0 bottom-0 right-0 w-14 bg-gradient-to-l from-slate-900/90 to-transparent" />
+
+            <div className="absolute top-1/2 left-1/2 w-[92vw] max-w-[1400px] h-[92vh] -translate-x-1/2 -translate-y-1/2 rounded-[48px] border border-cyan-500/25" />
+            <div className="absolute top-1/2 left-1/2 w-[88vw] max-w-[1320px] h-[88vh] -translate-x-1/2 -translate-y-1/2 rounded-[42px] border border-cyan-500/10" />
+
+            <div
+                className="absolute top-10 right-[12%] w-64 h-28"
+                style={{
+                    background: 'linear-gradient(130deg, rgba(255,255,255,0.18), rgba(255,255,255,0.03) 40%, transparent 75%)',
+                    filter: 'blur(1px)',
+                    clipPath: 'polygon(8% 0, 100% 0, 92% 100%, 0 100%)',
+                }}
+            />
+
+            <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
+                <path
+                    d="M 10% 12% Q 50% 3%, 90% 12%"
+                    stroke="rgba(34, 211, 238, 0.35)"
+                    strokeWidth="2"
+                    fill="none"
+                />
+                <path
+                    d="M 16% 88% Q 50% 96%, 84% 88%"
+                    stroke="rgba(34, 211, 238, 0.22)"
+                    strokeWidth="2"
+                    fill="none"
+                />
+                <line x1="50%" y1="8%" x2="50%" y2="16%" stroke="rgba(34, 211, 238, 0.28)" strokeWidth="2" />
+                <line x1="50%" y1="84%" x2="50%" y2="92%" stroke="rgba(34, 211, 238, 0.28)" strokeWidth="2" />
+                <line x1="8%" y1="50%" x2="16%" y2="50%" stroke="rgba(34, 211, 238, 0.28)" strokeWidth="2" />
+                <line x1="84%" y1="50%" x2="92%" y2="50%" stroke="rgba(34, 211, 238, 0.28)" strokeWidth="2" />
+            </svg>
+        </div>
+    );
+}
+
+/**
+ * Top status strip similar to Gundam pilot helmet telemetry.
+ */
+function CockpitStatusHeader({ mode }: { mode: CombatMode }) {
+    const modeColor = mode === 'COMBAT' ? 'text-red-300' : mode === 'SCAN' ? 'text-magenta-300' : 'text-cyan-200';
+
+    return (
+        <motion.div
+            className="absolute top-4 left-1/2 -translate-x-1/2 z-30"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35 }}
+        >
+            <div className="flex items-center gap-3 px-4 py-1.5 border border-cyan-500/40 bg-slate-950/60 backdrop-blur-sm text-[10px] font-mono text-cyan-300"
+                style={{ clipPath: 'polygon(10px 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 10px 100%, 0 50%)' }}>
+                <span className="text-cyan-500/70">PILOT_LINK</span>
+                <span className="text-green-400">STABLE</span>
+                <span className="text-cyan-500/30">|</span>
+                <span className="text-cyan-500/70">MODE</span>
+                <span className={modeColor}>{mode}</span>
+                <span className="text-cyan-500/30">|</span>
+                <span className="text-cyan-100">RX-0 UNICORN</span>
+            </div>
+        </motion.div>
+    );
+}
+
+function CombatModeChip({ mode }: { mode: CombatMode }) {
+    const modeStyle = mode === 'COMBAT'
+        ? 'text-red-300 border-red-500/45 bg-red-500/10'
+        : mode === 'SCAN'
+            ? 'text-magenta-300 border-magenta-500/45 bg-magenta-500/10'
+            : 'text-cyan-200 border-cyan-500/45 bg-cyan-500/10';
+
+    return (
+        <motion.div
+            className={`absolute right-5 top-16 px-3 py-1 text-[10px] font-mono border backdrop-blur-sm z-30 ${modeStyle}`}
+            initial={{ opacity: 0, x: 10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.45 }}
+            style={{ clipPath: 'polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%)' }}
+        >
+            MODE::{mode}
+        </motion.div>
+    );
+}
+
+/**
+ * Center lock overlay to make aiming and pilot focus feel intentional.
+ */
+function CentralTargetLock() {
+    return (
+        <motion.div
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-30"
+            initial={{ opacity: 0, scale: 0.92 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.5 }}
+        >
+            <div className="relative w-48 h-48 md:w-56 md:h-56">
+                <motion.div
+                    className="absolute inset-0 border border-cyan-400/45"
+                    style={{ clipPath: 'polygon(16% 0, 84% 0, 100% 16%, 100% 84%, 84% 100%, 16% 100%, 0 84%, 0 16%)' }}
+                    animate={{ rotate: [0, 360] }}
+                    transition={{ duration: 22, repeat: Infinity, ease: 'linear' }}
+                />
+                <motion.div
+                    className="absolute inset-5 border border-magenta-400/30"
+                    style={{ clipPath: 'polygon(18% 0, 82% 0, 100% 18%, 100% 82%, 82% 100%, 18% 100%, 0 82%, 0 18%)' }}
+                    animate={{ rotate: [360, 0] }}
+                    transition={{ duration: 16, repeat: Infinity, ease: 'linear' }}
+                />
+                <div className="absolute left-1/2 top-1/2 w-24 md:w-28 h-px bg-gradient-to-r from-transparent via-cyan-400/70 to-transparent -translate-x-1/2 -translate-y-1/2" />
+                <div className="absolute left-1/2 top-1/2 h-24 md:h-28 w-px bg-gradient-to-b from-transparent via-cyan-400/70 to-transparent -translate-x-1/2 -translate-y-1/2" />
+                <div className="absolute left-1/2 top-[62%] -translate-x-1/2 text-[9px] font-mono text-cyan-300/80 tracking-wider">TARGET VECTOR ACQUIRED</div>
+            </div>
+        </motion.div>
+    );
+}
+
+/**
+ * Vertical warning rails on helmet edges like pilot visor side channels.
+ */
+function HelmetEdgeWarnings() {
+    return (
+        <div className="absolute inset-0 pointer-events-none z-30">
+            <div className="absolute left-1 top-1/2 -translate-y-1/2 hidden md:flex flex-col items-center gap-2">
+                <div className="h-40 w-px bg-gradient-to-b from-transparent via-red-400/70 to-transparent" />
+                <span className="text-[9px] font-mono text-red-300/80 [writing-mode:vertical-rl]">CAUTION::BLIND_ZONE</span>
+                <div className="h-40 w-px bg-gradient-to-b from-transparent via-cyan-400/50 to-transparent" />
+            </div>
+
+            <div className="absolute right-1 top-1/2 -translate-y-1/2 hidden md:flex flex-col items-center gap-2">
+                <div className="h-40 w-px bg-gradient-to-b from-transparent via-red-400/70 to-transparent" />
+                <span className="text-[9px] font-mono text-red-300/80 [writing-mode:vertical-rl]">THREAT_SCAN::ACTIVE</span>
+                <div className="h-40 w-px bg-gradient-to-b from-transparent via-cyan-400/50 to-transparent" />
+            </div>
+        </div>
+    );
+}
+
+/**
  * Main Pilot HUD Background Component
  */
 export function PilotHUDBackground({ className = '' }: PilotHUDBackgroundProps) {
+    const [mode, setMode] = useState<CombatMode>('SCAN');
+
+    useEffect(() => {
+        const sequence: CombatMode[] = ['NORMAL', 'SCAN', 'COMBAT', 'SCAN'];
+        let index = 0;
+
+        const interval = setInterval(() => {
+            index = (index + 1) % sequence.length;
+            setMode(sequence[index]);
+        }, 4200);
+
+        return () => clearInterval(interval);
+    }, []);
+
     return (
         <div className={`absolute inset-0 overflow-hidden ${className}`}>
             {/* Space background - Deep space gradient */}
@@ -1163,38 +1492,20 @@ export function PilotHUDBackground({ className = '' }: PilotHUDBackgroundProps) 
                 }}
             />
 
-            {/* Helmet rim effect - Cockpit frame */}
-            <div className="absolute inset-0 pointer-events-none">
-                {/* Top rim curve - Cockpit canopy */}
-                <div
-                    className="absolute top-0 left-0 right-0 h-28 bg-gradient-to-b from-gray-900/95 via-gray-900/70 to-transparent"
-                    style={{ borderRadius: '0 0 50% 50%' }}
-                />
-                {/* Bottom cockpit panel */}
-                <div
-                    className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-gray-900/90 to-transparent"
-                />
-                {/* Side cockpit frames */}
-                <div className="absolute top-0 left-0 bottom-0 w-12 bg-gradient-to-r from-gray-900/80 to-transparent" />
-                <div className="absolute top-0 right-0 bottom-0 w-12 bg-gradient-to-l from-gray-900/80 to-transparent" />
+            {/* Helmet visor frame */}
+            <HelmetVisorOverlay />
 
-                {/* Cockpit frame lines */}
-                <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
-                    {/* Top frame arc */}
-                    <path
-                        d="M 0 80 Q 50 20, 100 80"
-                        stroke="rgba(71, 85, 105, 0.5)"
-                        strokeWidth="2"
-                        fill="none"
-                        style={{ vectorEffect: 'non-scaling-stroke' }}
-                    />
-                    {/* Bottom frame */}
-                    <line x1="0" y1="95%" x2="100%" y2="95%" stroke="rgba(71, 85, 105, 0.4)" strokeWidth="3" />
-                </svg>
-            </div>
+            {/* Cockpit top status strip */}
+            <CockpitStatusHeader mode={mode} />
 
-            {/* Enhanced Central scanner */}
-            <EnhancedCentralScanner />
+            {/* Mode chip */}
+            <CombatModeChip mode={mode} />
+
+            {/* Central target lock overlay */}
+            <CentralTargetLock />
+
+            {/* Helmet side warnings */}
+            <HelmetEdgeWarnings />
 
             {/* Vertical power gauge */}
             <VerticalPowerGauge />
@@ -1209,16 +1520,22 @@ export function PilotHUDBackground({ className = '' }: PilotHUDBackgroundProps) 
             {/* Circular gauges - Enhanced like reference */}
             <CircularGauge label="REACTOR" value={145} position="right" />
 
+            {/* Full scan radar - Main tactical display */}
+            <FullScanRadar />
+
             {/* Radar displays */}
             <RadarDisplay position="left" />
-            <RadarDisplay position="right" />
 
             {/* Mech profile */}
-            <MechProfilePanel />
+            <div className="hidden md:block">
+                <MechProfilePanel />
+            </div>
 
             {/* Side panels */}
-            <SidePanel position="left" />
-            <SidePanel position="right" />
+            <div className="hidden md:block">
+                <SidePanel position="left" />
+                <SidePanel position="right" />
+            </div>
 
             {/* Horizon line */}
             <HorizonLine />
@@ -1230,7 +1547,7 @@ export function PilotHUDBackground({ className = '' }: PilotHUDBackgroundProps) 
             <CompassBar />
 
             {/* Warning panel */}
-            <WarningPanel />
+            <WarningPanel mode={mode} />
 
             {/* Telemetry strip */}
             <TelemetryStrip />

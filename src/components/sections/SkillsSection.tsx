@@ -22,7 +22,6 @@ const SKILL_CATEGORIES: { key: SkillCategory | 'all'; label: string; code: strin
 
 // Usage context for each skill id (lightweight, no scores)
 const SKILL_USAGE: Record<string, { usedIn: string; context: string }> = {
-    python: { usedIn: 'University & automation', context: 'Data cleanup, quick scripting, reporting' },
     csharp: { usedIn: 'NashTech (TCG Shop, Asset Mgmt)', context: '.NET Core services with clean architecture' },
     java: { usedIn: 'VLU JobHunter backend', context: 'Spring Boot APIs and recruitment features' },
     javascript: { usedIn: 'GymZ frontend', context: 'React UI interactions and dashboards' },
@@ -38,14 +37,19 @@ const SKILL_USAGE: Record<string, { usedIn: string; context: string }> = {
     'azure-devops': { usedIn: 'NashTech sprints', context: 'Boards, pipelines, release tracking' },
     jira: { usedIn: 'Learning Chain sprints', context: 'Backlog management and sprint planning' },
     figma: { usedIn: 'UI wireframes', context: 'Hand-off docs and component specs' },
+    'lark-suite': { usedIn: 'Learning Chain operations', context: 'Team coordination, progress tracking, internal comms' },
     agile: { usedIn: 'Learning Chain & NashTech', context: 'Scrum rituals, sprint planning, estimation' },
     'clean-arch': { usedIn: 'NashTech .NET apps', context: 'Layered services, separation of concerns' },
     oop: { usedIn: 'All codebases', context: 'Domain modeling and patterns' },
     solid: { usedIn: 'Code reviews', context: 'Maintainable class design' },
+    tdd: { usedIn: 'NashTech backend testing', context: 'Writing tests-first flow with xUnit for critical modules' },
+    waterfall: { usedIn: 'Mixed delivery environments', context: 'Milestone planning and stage-gate documentation' },
     'project-mgmt': { usedIn: 'Learning Chain', context: 'Scope, risk, timeline control' },
     'business-analysis': { usedIn: 'Learning Chain', context: 'Requirement elicitation and documentation' },
     'stakeholder-comm': { usedIn: 'Learning Chain workshops', context: 'Bridge SMEs and engineering' },
     'risk-mgmt': { usedIn: 'Learning Chain delivery', context: 'Mitigation planning and contingency' },
+    'time-mgmt': { usedIn: 'Multi-role delivery', context: 'Balancing BA, coordination, and engineering deadlines' },
+    'problem-solving': { usedIn: 'Production and training projects', context: 'Root-cause analysis and solution trade-off decisions' },
 };
 
 const CATEGORY_BADGE: Record<SkillCategory | 'all', string> = {

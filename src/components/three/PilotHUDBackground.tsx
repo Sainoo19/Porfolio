@@ -1,695 +1,696 @@
 /**
- * @fileoverview Pilot HUD Background Component
- * @description Gundam pilot helmet view with targeting systems, radar, and status displays
- * @optimizations memo components, reduced intervals, CSS animations where possible
+ * @fileoverview Pilot HUD Background Component — Gundam Cockpit Helmet View
+ *
+ * Complete cockpit HUD rendered as a 2D overlay. Features:
+ *  - Gundam-style boot-up sequence with synthesised sound (Web Audio API)
+ *  - BATTLE MODE toggle that shifts the entire palette to red neon
+ *  - Visor frame with chromatic aberration & glass reflections
+ *  - Central targeting optic, tactical radar, system panels
+ *  - Atmospheric FX: floating particles, data streams, holographic grid
+ *
+ * Performance: CSS keyframe animations for loops; Framer Motion only for
+ * entrance transitions & mode colour shifts. Memoised static content.
  */
 
-import { motion } from 'framer-motion';
-import { useEffect, useState, useMemo, memo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect, useState, useMemo, memo, useCallback, useRef } from 'react';
+
+/* ================================================================
+   TYPES & CONSTANTS
+   ================================================================ */
 
 interface PilotHUDBackgroundProps {
     className?: string;
+    isBattle: boolean;
 }
 
-type CombatMode = 'NORMAL' | 'SCAN' | 'COMBAT';
-
-// Memoized tick marks - static content
-const PowerGaugeTickMarks = memo(function PowerGaugeTickMarks() {
-    return (
-        <>
-            {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                <g key={i}>
-                    <line x1="8" y1={25 + i * 18.75} x2="12" y2={25 + i * 18.75}
-                        stroke="rgba(34, 211, 238, 0.5)" strokeWidth="1" />
-                    <line x1="28" y1={25 + i * 18.75} x2="32" y2={25 + i * 18.75}
-                        stroke="rgba(34, 211, 238, 0.5)" strokeWidth="1" />
-                </g>
-            ))}
-        </>
-    );
-});
-
-/**
- * Vertical Power Gauge - Like the left side gauge in reference
- */
-const VerticalPowerGauge = memo(function VerticalPowerGauge() {
-    const [powerLevel, setPowerLevel] = useState(397);
-
-    useEffect(() => {
-        // Slower interval for better performance
-        const interval = setInterval(() => {
-            setPowerLevel(prev => Math.max(350, Math.min(420, prev + Math.floor(Math.random() * 10 - 5))));
-        }, 1200);
-        return () => clearInterval(interval);
-    }, []);
-
-    return (
-        <motion.div
-            className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-64"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.6 }}
-        >
-            {/* Power value display */}
-            <div className="absolute -top-8 left-0 right-0 text-center">
-                <span className="text-lg font-mono font-bold text-cyan-400">{powerLevel}</span>
-            </div>
-
-            <svg viewBox="0 0 40 200" className="w-full h-full">
-                {/* Outer frame */}
-                <path d="M5 10 L5 190 L35 190 L35 10 L25 0 L15 0 Z"
-                    fill="rgba(34, 211, 238, 0.05)"
-                    stroke="rgba(34, 211, 238, 0.4)"
-                    strokeWidth="1.5" />
-
-                {/* Inner gauge track */}
-                <rect x="12" y="20" width="16" height="160" fill="rgba(0,0,0,0.4)" />
-
-                {/* Power fill */}
-                <motion.rect
-                    x="14" y="25" width="12"
-                    fill="url(#powerGradient)"
-                    initial={{ height: 0 }}
-                    animate={{ height: 150 * (powerLevel / 500) }}
-                    style={{ transformOrigin: 'bottom' }}
-                    transform="translate(0, 155) scale(1, -1)"
-                />
-
-                {/* Tick marks - memoized */}
-                <PowerGaugeTickMarks />
-
-                {/* Gradient definition */}
-                <defs>
-                    <linearGradient id="powerGradient" x1="0%" y1="100%" x2="0%" y2="0%">
-                        <stop offset="0%" stopColor="rgba(34, 211, 238, 0.9)" />
-                        <stop offset="50%" stopColor="rgba(34, 211, 238, 0.7)" />
-                        <stop offset="100%" stopColor="rgba(217, 70, 239, 0.8)" />
-                    </linearGradient>
-                </defs>
-            </svg>
-
-            {/* Label */}
-            <div className="absolute -bottom-6 left-0 right-0 text-center">
-                <span className="text-[8px] font-mono text-cyan-500/60">PWR</span>
-            </div>
-        </motion.div>
-    );
-});
-
-
-/**
- * Enhanced Central Scanner with arrow rings - Like main circular HUD in reference
- */
-function EnhancedCentralScanner() {
-    return (
-        <motion.div
-            className="absolute left-1/2 top-1/2"
-            style={{ width: '380px', height: '380px', transform: 'translate(-50%, -50%)' }}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1 }}
-        >
-            <svg viewBox="0 0 380 380" className="w-full h-full">
-                {/* Outermost ring with chevron arrows */}
-                <motion.g
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
-                    style={{ transformOrigin: '190px 190px' }}
-                >
-                    <circle cx="190" cy="190" r="180" fill="none" stroke="rgba(34, 211, 238, 0.15)" strokeWidth="1" strokeDasharray="8 12" />
-                    {/* Chevron arrows around outer ring */}
-                    {[...Array(24)].map((_, i) => (
-                        <g key={i} transform={`rotate(${i * 15} 190 190)`}>
-                            <path d="M190 15 L195 25 L190 20 L185 25 Z" fill="rgba(34, 211, 238, 0.4)" />
-                        </g>
-                    ))}
-                </motion.g>
-
-                {/* Second ring - counter rotating with ticks */}
-                <motion.g
-                    animate={{ rotate: -360 }}
-                    transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
-                    style={{ transformOrigin: '190px 190px' }}
-                >
-                    <circle cx="190" cy="190" r="155" fill="none" stroke="rgba(217, 70, 239, 0.25)" strokeWidth="2" />
-                    {/* Tick marks */}
-                    {[...Array(36)].map((_, i) => (
-                        <line key={i}
-                            x1="190" y1="38" x2="190" y2="48"
-                            stroke="rgba(217, 70, 239, 0.5)" strokeWidth="1"
-                            transform={`rotate(${i * 10} 190 190)`}
-                        />
-                    ))}
-                </motion.g>
-
-                {/* Inner static rings */}
-                <circle cx="190" cy="190" r="130" fill="none" stroke="rgba(34, 211, 238, 0.2)" strokeWidth="1" />
-                <circle cx="190" cy="190" r="105" fill="none" stroke="rgba(34, 211, 238, 0.15)" strokeWidth="1" strokeDasharray="4 4" />
-                <circle cx="190" cy="190" r="80" fill="none" stroke="rgba(34, 211, 238, 0.25)" strokeWidth="1.5" />
-                <circle cx="190" cy="190" r="55" fill="none" stroke="rgba(34, 211, 238, 0.2)" strokeWidth="1" />
-
-                {/* Direction indicators at cardinal points */}
-                {[0, 90, 180, 270].map((angle) => (
-                    <g key={angle} transform={`rotate(${angle} 190 190)`}>
-                        <path d="M190 65 L200 85 L190 75 L180 85 Z" fill="rgba(34, 211, 238, 0.5)" />
-                        <line x1="190" y1="90" x2="190" y2="130" stroke="rgba(34, 211, 238, 0.3)" strokeWidth="2" />
-                    </g>
-                ))}
-
-                {/* Rotating scanner beam */}
-                <motion.g
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
-                    style={{ transformOrigin: '190px 190px' }}
-                >
-                    <path
-                        d="M190 190 L190 60 A130 130 0 0 1 280 120 Z"
-                        fill="url(#scannerBeam)"
-                        opacity="0.3"
-                    />
-                    <line x1="190" y1="190" x2="190" y2="60" stroke="rgba(34, 211, 238, 0.8)" strokeWidth="2" />
-                </motion.g>
-
-                {/* Pulsing center */}
-                <motion.circle
-                    cx="190" cy="190" r="25"
-                    fill="rgba(34, 211, 238, 0.1)"
-                    stroke="rgba(34, 211, 238, 0.5)"
-                    strokeWidth="2"
-                    animate={{ r: [25, 35, 25], opacity: [0.5, 0.2, 0.5] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                />
-                <circle cx="190" cy="190" r="15" fill="none" stroke="rgba(217, 70, 239, 0.6)" strokeWidth="2" />
-                <circle cx="190" cy="190" r="5" fill="rgba(34, 211, 238, 1)" />
-
-                {/* Gradient definitions */}
-                <defs>
-                    <radialGradient id="scannerBeam" cx="50%" cy="0%" r="100%">
-                        <stop offset="0%" stopColor="rgba(34, 211, 238, 0.6)" />
-                        <stop offset="100%" stopColor="rgba(34, 211, 238, 0)" />
-                    </radialGradient>
-                </defs>
-            </svg>
-        </motion.div>
-    );
+/** Palette tokens that change with battle mode */
+export interface HUDPalette {
+    primary: string;       // main glow  e.g. rgba(34,211,238,…)
+    primaryHex: string;    // #hex form
+    accent: string;        // secondary glow
+    accentHex: string;
+    dim: string;           // muted text / lines
+    bg: string;            // panel background tint
+    scanBeam: string;
+    alertBg: string;
+    alertBorder: string;
+    alertText: string;
+    label: string;         // NORMAL | BATTLE
 }
 
-/**
- * Targeting Reticle Component
- */
-function TargetingReticle({ x, y, size = 100, delay = 0 }: { x: string; y: string; size?: number; delay?: number }) {
-    return (
-        <motion.div
-            className="absolute"
-            style={{ left: x, top: y, width: size, height: size, transform: 'translate(-50%, -50%)' }}
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: [0.3, 0.6, 0.3], scale: [1, 1.05, 1] }}
-            transition={{ duration: 3, repeat: Infinity, delay }}
-        >
-            {/* Outer circle */}
-            <svg viewBox="0 0 100 100" className="w-full h-full">
-                <circle cx="50" cy="50" r="48" fill="none" stroke="rgba(34, 211, 238, 0.3)" strokeWidth="1" strokeDasharray="4 4" />
-                <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(34, 211, 238, 0.4)" strokeWidth="0.5" />
-                <circle cx="50" cy="50" r="30" fill="none" stroke="rgba(34, 211, 238, 0.2)" strokeWidth="0.5" strokeDasharray="2 2" />
+export const CYAN_PALETTE: HUDPalette = {
+    primary: 'rgba(34,211,238,',
+    primaryHex: '#22d3ee',
+    accent: 'rgba(217,70,239,',
+    accentHex: '#d946ef',
+    dim: 'rgba(34,211,238,0.35)',
+    bg: 'rgba(6,20,35,0.7)',
+    scanBeam: 'rgba(34,211,238,0.6)',
+    alertBg: 'rgba(34,211,238,0.06)',
+    alertBorder: 'rgba(34,211,238,0.35)',
+    alertText: 'rgba(34,211,238,0.85)',
+    label: 'NORMAL',
+};
 
-                {/* Cross hairs */}
-                <line x1="50" y1="10" x2="50" y2="30" stroke="rgba(34, 211, 238, 0.5)" strokeWidth="1" />
-                <line x1="50" y1="70" x2="50" y2="90" stroke="rgba(34, 211, 238, 0.5)" strokeWidth="1" />
-                <line x1="10" y1="50" x2="30" y2="50" stroke="rgba(34, 211, 238, 0.5)" strokeWidth="1" />
-                <line x1="70" y1="50" x2="90" y2="50" stroke="rgba(34, 211, 238, 0.5)" strokeWidth="1" />
+export const RED_PALETTE: HUDPalette = {
+    primary: 'rgba(255,50,50,',
+    primaryHex: '#ff3232',
+    accent: 'rgba(255,160,30,',
+    accentHex: '#ffa01e',
+    dim: 'rgba(255,50,50,0.35)',
+    bg: 'rgba(35,6,6,0.7)',
+    scanBeam: 'rgba(255,50,50,0.6)',
+    alertBg: 'rgba(255,50,50,0.08)',
+    alertBorder: 'rgba(255,50,50,0.45)',
+    alertText: 'rgba(255,50,50,0.9)',
+    label: 'BATTLE',
+};
 
-                {/* Corner brackets */}
-                <path d="M20 20 L20 30 M20 20 L30 20" stroke="rgba(34, 211, 238, 0.6)" strokeWidth="1.5" fill="none" />
-                <path d="M80 20 L80 30 M80 20 L70 20" stroke="rgba(34, 211, 238, 0.6)" strokeWidth="1.5" fill="none" />
-                <path d="M20 80 L20 70 M20 80 L30 80" stroke="rgba(34, 211, 238, 0.6)" strokeWidth="1.5" fill="none" />
-                <path d="M80 80 L80 70 M80 80 L70 80" stroke="rgba(34, 211, 238, 0.6)" strokeWidth="1.5" fill="none" />
+/* ================================================================
+   WEB AUDIO — SYNTHESISED GUNDAM BOOT SOUNDS
+   ================================================================ */
 
-                {/* Center dot */}
-                <circle cx="50" cy="50" r="2" fill="rgba(34, 211, 238, 0.8)" />
-            </svg>
-        </motion.div>
-    );
-}
+class GundamAudio {
+    private ctx: AudioContext | null = null;
 
-/**
- * Radar Component
- */
-function RadarDisplay({ position }: { position: 'left' | 'right' }) {
-    const [enemyPing, setEnemyPing] = useState<{ x: number; y: number; active: boolean }>({ x: 50, y: 50, active: false });
+    private getCtx(): AudioContext {
+        if (!this.ctx) this.ctx = new AudioContext();
+        return this.ctx;
+    }
 
-    // Random enemy blip that flashes red occasionally
-    useEffect(() => {
-        let timer: ReturnType<typeof setTimeout>;
+    /** Low power-up hum that rises in pitch */
+    playPowerUp() {
+        try {
+            const ctx = this.getCtx();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(60, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(220, ctx.currentTime + 1.8);
+            gain.gain.setValueAtTime(0, ctx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.12, ctx.currentTime + 0.3);
+            gain.gain.linearRampToValueAtTime(0.08, ctx.currentTime + 1.5);
+            gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 2.2);
+            osc.connect(gain).connect(ctx.destination);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 2.2);
+        } catch { /* silent fail */ }
+    }
 
-        const triggerPing = () => {
-            const shouldPing = Math.random() < 0.7;
-            if (shouldPing) {
-                const x = 20 + Math.random() * 60;
-                const y = 20 + Math.random() * 60;
-                setEnemyPing({ x, y, active: true });
+    /** Short digital beep for each system coming online */
+    playBeep(delayMs = 0, freq = 880) {
+        try {
+            const ctx = this.getCtx();
+            const t = ctx.currentTime + delayMs / 1000;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(freq, t);
+            gain.gain.setValueAtTime(0, t);
+            gain.gain.linearRampToValueAtTime(0.07, t + 0.02);
+            gain.gain.linearRampToValueAtTime(0, t + 0.12);
+            osc.connect(gain).connect(ctx.destination);
+            osc.start(t);
+            osc.stop(t + 0.15);
+        } catch { /* silent fail */ }
+    }
 
-                setTimeout(() => {
-                    setEnemyPing((prev) => ({ ...prev, active: false }));
-                }, 700);
+    /** Confirmation chime — two-tone ascending */
+    playOnlineChime(delayMs = 0) {
+        this.playBeep(delayMs, 660);
+        this.playBeep(delayMs + 120, 990);
+    }
+
+    /** Battle mode activation — descending aggressive tone */
+    playBattleToggle(isBattle: boolean) {
+        try {
+            const ctx = this.getCtx();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = isBattle ? 'sawtooth' : 'square';
+            osc.frequency.setValueAtTime(isBattle ? 440 : 880, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(isBattle ? 880 : 440, ctx.currentTime + 0.25);
+            gain.gain.setValueAtTime(0.1, ctx.currentTime);
+            gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.35);
+            osc.connect(gain).connect(ctx.destination);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.4);
+        } catch { /* silent fail */ }
+    }
+
+    private alarmInterval: any = null;
+
+    /** Intense repeating alarm for battle mode */
+    playAlarm(active: boolean) {
+        try {
+            const ctx = this.getCtx();
+            if (active) {
+                if (this.alarmInterval) return;
+                this.alarmInterval = setInterval(() => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(800, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.6);
+                    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.6);
+                    osc.connect(gain).connect(ctx.destination);
+                    osc.start(ctx.currentTime);
+                    osc.stop(ctx.currentTime + 0.6);
+                }, 800);
+            } else {
+                if (this.alarmInterval) {
+                    clearInterval(this.alarmInterval);
+                    this.alarmInterval = null;
+                }
             }
+        } catch { /* silent fail */ }
+    }
+}
 
-            timer = setTimeout(triggerPing, 2200 + Math.random() * 2000);
+export const gundamAudio = new GundamAudio();
+
+/* ================================================================
+   BOOT SEQUENCE
+   ================================================================ */
+
+interface BootLine {
+    text: string;
+    delay: number;    // ms from start
+    type: 'system' | 'ok' | 'warn' | 'header';
+}
+
+const BOOT_LINES: BootLine[] = [
+    { text: '> INITIALIZING PILOT NEURAL LINK...', delay: 200, type: 'system' },
+    { text: '> REACTOR CORE .................. ONLINE', delay: 600, type: 'ok' },
+    { text: '> PSYCHO-FRAME SYNC ............ 97.3%', delay: 1000, type: 'ok' },
+    { text: '> WEAPONS SYSTEM ............... ARMED', delay: 1400, type: 'warn' },
+    { text: '> MINOVSKY PARTICLE SCATTER .... NOMINAL', delay: 1800, type: 'ok' },
+    { text: '> HELMET VISOR HUD ............. ACTIVE', delay: 2200, type: 'ok' },
+    { text: '> ALL SYSTEMS .................. GREEN', delay: 2600, type: 'ok' },
+    { text: '', delay: 2900, type: 'header' },
+    { text: '   ██ UNICORN GUNDAM  —  RX-0  ██', delay: 3000, type: 'header' },
+    { text: '       PILOT LINK ESTABLISHED', delay: 3300, type: 'header' },
+];
+
+const BOOT_TOTAL_DURATION = 4200; // ms until HUD fades in
+
+function BootSequence({ onComplete, palette }: { onComplete: () => void; palette: HUDPalette }) {
+    const [visibleLines, setVisibleLines] = useState<number>(0);
+    const [progress, setProgress] = useState(0);
+    const hasPlayedRef = useRef(false);
+
+    useEffect(() => {
+        // Play power-up hum once on mount
+        if (!hasPlayedRef.current) {
+            hasPlayedRef.current = true;
+            // gundamAudio.playPowerUp(); // User requested to disable this
+        }
+
+        // Reveal lines one by one
+        const timers: ReturnType<typeof setTimeout>[] = [];
+        BOOT_LINES.forEach((line, i) => {
+            timers.push(setTimeout(() => {
+                setVisibleLines(i + 1);
+                if (line.type === 'ok') gundamAudio.playBeep(0, 880 + i * 60);
+                if (line.type === 'warn') gundamAudio.playBeep(0, 660);
+                if (line.type === 'header' && line.text.includes('UNICORN')) gundamAudio.playOnlineChime(0);
+            }, line.delay));
+        });
+
+        // Progress bar
+        const pInterval = setInterval(() => {
+            setProgress(prev => Math.min(prev + 1.5, 100));
+        }, BOOT_TOTAL_DURATION / 70);
+
+        // Finish
+        timers.push(setTimeout(() => {
+            onComplete();
+        }, BOOT_TOTAL_DURATION));
+
+        return () => {
+            timers.forEach(clearTimeout);
+            clearInterval(pInterval);
         };
+    }, [onComplete]);
 
-        triggerPing();
-        return () => clearTimeout(timer);
-    }, []);
+    const p = palette;
 
     return (
         <motion.div
-            className={`absolute ${position === 'left' ? 'left-4 bottom-16' : 'right-4 bottom-16'} w-44 h-44 md:w-56 md:h-56`}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            className="absolute inset-0 z-[100] flex items-center justify-center"
+            style={{ background: '#020810' }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.8 }}
+        >
+            {/* Scan line overlay */}
+            <div className="absolute inset-0 pointer-events-none opacity-20"
+                style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(34,211,238,0.08) 2px, rgba(34,211,238,0.08) 4px)' }} />
+
+            <div className="w-full max-w-lg px-6">
+                {/* Unit header */}
+                <motion.div
+                    className="text-center mb-8"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.1 }}
+                >
+                    <div className="text-[10px] font-mono tracking-[0.3em] mb-1" style={{ color: p.dim }}>
+                        ANAHEIM ELECTRONICS — MOBILE SUIT OS
+                    </div>
+                    <div className="h-px w-full" style={{ background: `linear-gradient(90deg, transparent, ${p.primaryHex}60, transparent)` }} />
+                </motion.div>
+
+                {/* Boot log */}
+                <div className="font-mono text-xs space-y-1 mb-8 min-h-[220px]">
+                    {BOOT_LINES.slice(0, visibleLines).map((line, i) => (
+                        <motion.div
+                            key={i}
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.15 }}
+                            style={{
+                                color: line.type === 'ok' ? '#4ade80'
+                                    : line.type === 'warn' ? '#fbbf24'
+                                    : line.type === 'header' ? p.primaryHex
+                                    : '#94a3b8',
+                                textShadow: line.type === 'header' ? `0 0 12px ${p.primaryHex}80` : undefined,
+                                fontSize: line.type === 'header' ? '14px' : undefined,
+                                fontWeight: line.type === 'header' ? 700 : undefined,
+                            }}
+                        >
+                            {line.text}
+                        </motion.div>
+                    ))}
+                    {/* Blinking cursor */}
+                    {visibleLines < BOOT_LINES.length && (
+                        <span className="inline-block w-2 h-3 animate-pulse" style={{ backgroundColor: p.primaryHex }} />
+                    )}
+                </div>
+
+                {/* Progress bar */}
+                <div className="relative h-2 border" style={{ borderColor: `${p.primaryHex}50`, background: 'rgba(0,0,0,0.5)' }}>
+                    <motion.div
+                        className="absolute inset-y-0 left-0"
+                        style={{
+                            background: `linear-gradient(90deg, ${p.primaryHex}, ${p.accentHex})`,
+                            boxShadow: `0 0 12px ${p.primaryHex}80`,
+                        }}
+                        animate={{ width: `${progress}%` }}
+                        transition={{ duration: 0.05 }}
+                    />
+                </div>
+                <div className="flex justify-between mt-1 text-[9px] font-mono" style={{ color: p.dim }}>
+                    <span>BOOT SEQUENCE</span>
+                    <span>{Math.round(progress)}%</span>
+                </div>
+                
+                {/* Skip Button */}
+                <motion.button
+                    className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-2 px-6 py-2 border font-mono text-xs tracking-[0.2em] cursor-pointer"
+                    style={{
+                        color: p.primaryHex,
+                        borderColor: `${p.primaryHex}50`,
+                        background: `${p.primaryHex}10`,
+                        clipPath: 'polygon(10px 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 10px 100%, 0 50%)',
+                    }}
+                    onClick={onComplete}
+                    whileHover={{ scale: 1.05, background: `${p.primaryHex}20` }}
+                    whileTap={{ scale: 0.95 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 1 }}
+                >
+                    [ SKIP SEQUENCE ]
+                </motion.button>
+            </div>
+        </motion.div>
+    );
+}
+
+/* ================================================================
+   BATTLE MODE BUTTON
+   ================================================================ */
+
+export function BattleModeButton({ isBattle, onToggle, palette: p, className = '' }: { isBattle: boolean; onToggle?: () => void; palette: HUDPalette; className?: string }) {
+    return (
+        <motion.button
+            className={`px-5 py-2 border font-mono text-xs tracking-[0.2em] flex items-center gap-3 backdrop-blur-md cursor-pointer pointer-events-auto transition-colors duration-500 hover:brightness-125 ${className}`}
+            onClick={onToggle}
+            style={{
+                color: p.primaryHex,
+                borderColor: `${p.primaryHex}60`,
+                background: `${p.primaryHex}10`,
+                clipPath: 'polygon(10px 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 10px 100%, 0 50%)',
+                textShadow: `0 0 8px ${isBattle ? 'rgba(255,50,50,0.6)' : 'rgba(34,211,238,0.5)'}`,
+            }}
+            whileHover={{ scale: 1.06, boxShadow: `0 0 25px ${isBattle ? 'rgba(255,50,50,0.4)' : 'rgba(34,211,238,0.3)'}` }}
+            whileTap={{ scale: 0.95 }}
+        >
+            {/* Pulsing indicator dot */}
+            <motion.div
+                className="w-2 h-2 rounded-full"
+                style={{ backgroundColor: isBattle ? '#ff3232' : '#22d3ee' }}
+                animate={{ opacity: [1, 0.3, 1], scale: [1, 1.3, 1] }}
+                transition={{ duration: isBattle ? 0.6 : 1.5, repeat: Infinity }}
+            />
+            <span>{isBattle ? '◆ BATTLE MODE' : '◇ NORMAL MODE'}</span>
+        </motion.button>
+    );
+}
+
+/* ================================================================
+   VISOR FRAME — Helmet glass, vignette, chromatic aberration
+   ================================================================ */
+
+const VisorFrame = memo(function VisorFrame({ palette: p }: { palette: HUDPalette }) {
+    return (
+        <div className="absolute inset-0 pointer-events-none z-30">
+            {/* Heavy vignette */}
+            <div className="absolute inset-0" style={{
+                background: `radial-gradient(ellipse 70% 65% at center, rgba(0,0,0,0) 30%, rgba(2,6,23,0.75) 80%, rgba(0,0,0,0.95) 100%)`,
+            }} />
+
+            {/* Top/bottom frame darkness */}
+            <div className="absolute top-0 left-0 right-0 h-28 bg-gradient-to-b from-black/90 via-slate-950/70 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/90 via-slate-950/60 to-transparent" />
+            <div className="absolute top-0 bottom-0 left-0 w-16 bg-gradient-to-r from-black/80 to-transparent" />
+            <div className="absolute top-0 bottom-0 right-0 w-16 bg-gradient-to-l from-black/80 to-transparent" />
+
+            {/* Visor curved border */}
+            <div className="absolute top-1/2 left-1/2 w-[94vw] max-w-[1500px] h-[93vh] -translate-x-1/2 -translate-y-1/2 rounded-[52px] border" style={{ borderColor: `${p.primaryHex}30` }} />
+            <div className="absolute top-1/2 left-1/2 w-[90vw] max-w-[1400px] h-[89vh] -translate-x-1/2 -translate-y-1/2 rounded-[44px] border" style={{ borderColor: `${p.primaryHex}15` }} />
+
+            {/* Glass reflection streak */}
+            <div className="absolute top-8 right-[10%] w-72 h-24 opacity-60"
+                style={{
+                    background: 'linear-gradient(130deg, rgba(255,255,255,0.12), rgba(255,255,255,0.02) 40%, transparent 70%)',
+                    filter: 'blur(1px)',
+                    clipPath: 'polygon(6% 0, 100% 0, 94% 100%, 0 100%)',
+                }}
+            />
+
+            {/* Chromatic aberration — thin colour-shifted borders on edges */}
+            <div className="absolute inset-0 overflow-hidden">
+                {/* Red shift left edge */}
+                <div className="absolute top-0 bottom-0 left-0 w-3 opacity-30"
+                    style={{ background: 'linear-gradient(to right, rgba(255,0,0,0.3), transparent)' }} />
+                {/* Blue shift right edge */}
+                <div className="absolute top-0 bottom-0 right-0 w-3 opacity-30"
+                    style={{ background: 'linear-gradient(to left, rgba(0,100,255,0.3), transparent)' }} />
+                {/* Top aberration */}
+                <div className="absolute top-0 left-0 right-0 h-2 opacity-20"
+                    style={{ background: 'linear-gradient(to bottom, rgba(255,0,100,0.3), transparent)' }} />
+            </div>
+
+            {/* Visor arch lines — use viewBox coordinates, not percentages */}
+            <svg className="absolute inset-0 w-full h-full" viewBox="0 0 1000 1000" preserveAspectRatio="none">
+                <path d="M 80 110 Q 500 20, 920 110" stroke={`${p.primaryHex}40`} strokeWidth="2" fill="none" />
+                <path d="M 140 890 Q 500 970, 860 890" stroke={`${p.primaryHex}25`} strokeWidth="1.5" fill="none" />
+                <line x1="500" y1="60" x2="500" y2="140" stroke={`${p.primaryHex}30`} strokeWidth="2" />
+                <line x1="500" y1="860" x2="500" y2="940" stroke={`${p.primaryHex}30`} strokeWidth="2" />
+                <line x1="60" y1="500" x2="140" y2="500" stroke={`${p.primaryHex}30`} strokeWidth="2" />
+                <line x1="860" y1="500" x2="940" y2="500" stroke={`${p.primaryHex}30`} strokeWidth="2" />
+            </svg>
+        </div>
+    );
+});
+
+/* ================================================================
+   TOP STATUS BAR
+   ================================================================ */
+
+function TopStatusBar({ palette: p }: { palette: HUDPalette; isBattle: boolean }) {
+    return (
+        <motion.div
+            className="absolute top-3 left-1/2 -translate-x-1/2 z-40"
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+        >
+            <div
+                className="flex items-center gap-3 px-5 py-1.5 border backdrop-blur-sm text-[10px] font-mono"
+                style={{
+                    background: p.bg,
+                    borderColor: `${p.primaryHex}45`,
+                    color: p.primaryHex,
+                    clipPath: 'polygon(12px 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 12px 100%, 0 50%)',
+                    textShadow: `0 0 6px ${p.primaryHex}60`,
+                }}
+            >
+                <span style={{ opacity: 0.6 }}>PILOT_LINK</span>
+                <span style={{ color: '#4ade80' }}>STABLE</span>
+                <span style={{ opacity: 0.25 }}>|</span>
+                <span style={{ opacity: 0.6 }}>MODE</span>
+                <motion.span
+                    animate={{ color: p.primaryHex }}
+                    transition={{ duration: 0.4 }}
+                >
+                    {p.label}
+                </motion.span>
+                <span style={{ opacity: 0.25 }}>|</span>
+                <span>RX-0 UNICORN</span>
+            </div>
+        </motion.div>
+    );
+}
+
+/* ================================================================
+   COMPASS HEADING BAR
+   ================================================================ */
+
+function CompassBar({ palette: p }: { palette: HUDPalette }) {
+    return (
+        <motion.div
+            className="absolute top-10 left-1/2 -translate-x-1/2 w-56 md:w-72 z-40"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
         >
-            <svg viewBox="0 0 200 200" className="w-full h-full">
-                {/* Outer ring with degree numbers */}
-                <circle cx="100" cy="100" r="95" fill="rgba(34, 211, 238, 0.02)" stroke="rgba(34, 211, 238, 0.4)" strokeWidth="2" />
-
-                {/* Degree tick marks and numbers */}
-                {[...Array(36)].map((_, i) => {
-                    const angle = i * 10;
-                    const isMajor = angle % 30 === 0;
-                    const radians = (angle - 90) * (Math.PI / 180);
-                    const innerR = isMajor ? 78 : 85;
-                    const outerR = 92;
-                    const textR = 70;
-                    const x1 = 100 + innerR * Math.cos(radians);
-                    const y1 = 100 + innerR * Math.sin(radians);
-                    const x2 = 100 + outerR * Math.cos(radians);
-                    const y2 = 100 + outerR * Math.sin(radians);
-                    const textX = 100 + textR * Math.cos(radians);
-                    const textY = 100 + textR * Math.sin(radians);
-
-                    return (
-                        <g key={i}>
-                            <line
-                                x1={x1} y1={y1} x2={x2} y2={y2}
-                                stroke={isMajor ? 'rgba(34, 211, 238, 0.6)' : 'rgba(34, 211, 238, 0.3)'}
-                                strokeWidth={isMajor ? 2 : 1}
-                            />
-                            {isMajor && (
-                                <text
-                                    x={textX} y={textY}
-                                    fill="rgba(34, 211, 238, 0.7)"
-                                    fontSize="7"
-                                    fontFamily="monospace"
-                                    textAnchor="middle"
-                                    dominantBaseline="middle"
-                                >
-                                    {angle}
-                                </text>
-                            )}
-                        </g>
-                    );
-                })}
-
-                {/* Inner concentric circles */}
-                <circle cx="100" cy="100" r="60" fill="none" stroke="rgba(34, 211, 238, 0.2)" strokeWidth="1" />
-                <circle cx="100" cy="100" r="40" fill="none" stroke="rgba(34, 211, 238, 0.15)" strokeWidth="1" />
-                <circle cx="100" cy="100" r="20" fill="none" stroke="rgba(34, 211, 238, 0.15)" strokeWidth="1" />
-
-                {/* Cross lines */}
-                <line x1="100" y1="8" x2="100" y2="192" stroke="rgba(34, 211, 238, 0.12)" strokeWidth="0.5" />
-                <line x1="8" y1="100" x2="192" y2="100" stroke="rgba(34, 211, 238, 0.12)" strokeWidth="0.5" />
-                <line x1="30" y1="30" x2="170" y2="170" stroke="rgba(34, 211, 238, 0.08)" strokeWidth="0.5" />
-                <line x1="170" y1="30" x2="30" y2="170" stroke="rgba(34, 211, 238, 0.08)" strokeWidth="0.5" />
-
-                {/* Friendly/neutral blips */}
-                <motion.circle
-                    cx="70" cy="60" r="3"
-                    fill="rgba(34, 211, 238, 0.8)"
-                    animate={{ opacity: [0.3, 1, 0.3] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                />
-                <motion.circle
-                    cx="130" cy="90" r="2.5"
-                    fill="rgba(217, 70, 239, 0.8)"
-                    animate={{ opacity: [0.3, 1, 0.3] }}
-                    transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-                />
-                <motion.circle
-                    cx="110" cy="140" r="3"
-                    fill="rgba(163, 230, 53, 0.8)"
-                    animate={{ opacity: [0.3, 1, 0.3] }}
-                    transition={{ duration: 2, repeat: Infinity, delay: 1 }}
-                />
-
-                {/* Enemy ping (red) with glow effect */}
-                {enemyPing.active && (
-                    <>
-                        <motion.circle
-                            cx={enemyPing.x * 2}
-                            cy={enemyPing.y * 2}
-                            r="6"
-                            fill="rgba(239, 68, 68, 0.3)"
-                            animate={{ scale: [1, 2, 1], opacity: [0.5, 0, 0.5] }}
-                            transition={{ duration: 0.5, repeat: Infinity }}
-                        />
-                        <motion.circle
-                            cx={enemyPing.x * 2}
-                            cy={enemyPing.y * 2}
-                            r="4"
-                            fill="rgba(239, 68, 68, 1)"
-                            animate={{ scale: [1, 1.3, 1], opacity: [1, 0.6, 1] }}
-                            transition={{ duration: 0.4, repeat: Infinity }}
-                        />
-                    </>
-                )}
-
-                {/* Center point (self) */}
-                <circle cx="100" cy="100" r="4" fill="rgba(34, 211, 238, 1)" />
-                <circle cx="100" cy="100" r="8" fill="none" stroke="rgba(34, 211, 238, 0.5)" strokeWidth="1" />
-
-                {/* Rotating scanner beam with gradient tail */}
-                <motion.g
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 5, repeat: Infinity, ease: 'linear' }}
-                    style={{ transformOrigin: '100px 100px' }}
+            <div className="relative h-5 border overflow-hidden" style={{ borderColor: `${p.primaryHex}30`, background: p.bg }}>
+                <motion.div
+                    className="absolute inset-0 flex items-center justify-center gap-6 text-[9px] font-mono"
+                    animate={{ x: [0, -16, 0] }}
+                    transition={{ duration: 10, repeat: Infinity, ease: 'linear' }}
                 >
-                    <defs>
-                        <linearGradient id={`radarSweep-${position}`} x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" stopColor="rgba(34, 211, 238, 0)" />
-                            <stop offset="100%" stopColor="rgba(34, 211, 238, 0.5)" />
-                        </linearGradient>
-                    </defs>
-                    <path
-                        d="M100 100 L100 20 A80 80 0 0 1 160 60 Z"
-                        fill={`url(#radarSweep-${position})`}
-                        opacity="0.4"
-                    />
-                    <line x1="100" y1="100" x2="100" y2="20" stroke="rgba(34, 211, 238, 0.8)" strokeWidth="2" />
-                </motion.g>
-            </svg>
-
-            {/* Label */}
-            <div className="absolute -top-6 left-0 right-0 text-center">
-                <span className="text-[10px] font-mono text-cyan-500/60 tracking-wider">
-                    {position === 'left' ? 'TACTICAL_MAP' : 'THREAT_RADAR'}
-                </span>
+                    <span style={{ color: `${p.primaryHex}50` }}>270°</span>
+                    <span style={{ color: `${p.primaryHex}50` }}>315°</span>
+                    <span style={{ color: p.primaryHex, fontWeight: 700 }}>N</span>
+                    <span style={{ color: `${p.primaryHex}50` }}>045°</span>
+                    <span style={{ color: `${p.primaryHex}50` }}>090°</span>
+                </motion.div>
+                <div className="absolute left-1/2 -translate-x-1/2 top-0 w-0.5 h-1.5" style={{ background: p.accentHex }} />
+                <div className="absolute left-1/2 -translate-x-1/2 bottom-0 w-0.5 h-1.5" style={{ background: p.accentHex }} />
+            </div>
+            <div className="text-center mt-0.5">
+                <span className="text-[8px] font-mono" style={{ color: `${p.primaryHex}50` }}>HEADING: 358°</span>
             </div>
         </motion.div>
     );
 }
 
-/**
- * Full Scan Radar with prominent sweeping beam - High-visibility tactical radar
- */
-function FullScanRadar() {
-    const [enemyBlips, setEnemyBlips] = useState<Array<{ x: number; y: number; id: number }>>([]);
+/* ================================================================
+   CENTRAL TARGETING OPTIC
+   ================================================================ */
+
+function CentralTargetingOptic({ palette: p }: { palette: HUDPalette }) {
+    return (
+        <motion.div
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-30"
+            initial={{ opacity: 0, scale: 0.85 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.4, duration: 0.6 }}
+        >
+            <div className="relative w-44 h-44 md:w-56 md:h-56">
+                {/* Outer spinning octagon */}
+                <motion.div
+                    className="absolute inset-0 border"
+                    style={{
+                        borderColor: `${p.primaryHex}40`,
+                        clipPath: 'polygon(16% 0, 84% 0, 100% 16%, 100% 84%, 84% 100%, 16% 100%, 0 84%, 0 16%)',
+                    }}
+                    animate={{ rotate: [0, 360] }}
+                    transition={{ duration: 24, repeat: Infinity, ease: 'linear' }}
+                />
+                {/* Inner counter-rotating octagon */}
+                <motion.div
+                    className="absolute inset-4 border"
+                    style={{
+                        borderColor: `${p.accentHex}30`,
+                        clipPath: 'polygon(18% 0, 82% 0, 100% 18%, 100% 82%, 82% 100%, 18% 100%, 0 82%, 0 18%)',
+                    }}
+                    animate={{ rotate: [360, 0] }}
+                    transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
+                />
+
+                {/* Crosshairs */}
+                <div className="absolute left-1/2 top-1/2 w-24 md:w-28 h-px -translate-x-1/2 -translate-y-1/2"
+                    style={{ background: `linear-gradient(90deg, transparent, ${p.primaryHex}70, transparent)` }} />
+                <div className="absolute left-1/2 top-1/2 h-24 md:h-28 w-px -translate-x-1/2 -translate-y-1/2"
+                    style={{ background: `linear-gradient(to bottom, transparent, ${p.primaryHex}70, transparent)` }} />
+
+                {/* Corner brackets */}
+                <svg className="absolute inset-0 w-full h-full" viewBox="0 0 200 200">
+                    <path d="M35 35 L35 55 M35 35 L55 35" stroke={`${p.primaryHex}70`} strokeWidth="2" fill="none" />
+                    <path d="M165 35 L165 55 M165 35 L145 35" stroke={`${p.primaryHex}70`} strokeWidth="2" fill="none" />
+                    <path d="M35 165 L35 145 M35 165 L55 165" stroke={`${p.primaryHex}70`} strokeWidth="2" fill="none" />
+                    <path d="M165 165 L165 145 M165 165 L145 165" stroke={`${p.primaryHex}70`} strokeWidth="2" fill="none" />
+                    {/* Center pulsing circle */}
+                    <circle cx="100" cy="100" r="5" fill={`${p.primaryHex}90`}>
+                        <animate attributeName="r" values="4;7;4" dur="2s" repeatCount="indefinite" />
+                        <animate attributeName="opacity" values="0.8;0.3;0.8" dur="2s" repeatCount="indefinite" />
+                    </circle>
+                    <circle cx="100" cy="100" r="2" fill={p.primaryHex} />
+                </svg>
+
+                {/* Label */}
+                <div className="absolute left-1/2 top-[64%] -translate-x-1/2 text-[8px] font-mono tracking-wider whitespace-nowrap"
+                    style={{ color: `${p.primaryHex}80` }}>
+                    TARGET VECTOR ACQUIRED
+                </div>
+            </div>
+        </motion.div>
+    );
+}
+
+/* ================================================================
+   TACTICAL RADAR (bottom-left)
+   ================================================================ */
+
+export function TacticalRadar({ palette: p }: { palette: HUDPalette }) {
+    const [blips, setBlips] = useState<{ x: number; y: number; id: number }[]>([]);
 
     useEffect(() => {
-        // Generate random enemy blips every 3 seconds
-        const generateBlips = () => {
-            const count = Math.floor(Math.random() * 4) + 2;
-            const newBlips = Array.from({ length: count }, (_, i) => ({
+        const gen = () => {
+            const count = 2 + Math.floor(Math.random() * 3);
+            setBlips(Array.from({ length: count }, (_, i) => ({
                 id: i,
-                x: 25 + Math.random() * 50,
-                y: 25 + Math.random() * 50,
-            }));
-            setEnemyBlips(newBlips);
+                x: 30 + Math.random() * 40,
+                y: 30 + Math.random() * 40,
+            })));
         };
-
-        generateBlips();
-        const interval = setInterval(generateBlips, 3000);
-        return () => clearInterval(interval);
+        gen();
+        const iv = setInterval(gen, 3500);
+        return () => clearInterval(iv);
     }, []);
 
     return (
         <motion.div
-            className="absolute left-4 bottom-4 w-64 h-64 md:w-80 md:h-80 z-20"
+            className="absolute left-3 bottom-14 w-40 h-40 md:w-52 md:h-52 z-40"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.4 }}
+            transition={{ delay: 0.6 }}
         >
-            <svg viewBox="0 0 300 300" className="w-full h-full drop-shadow-lg">
-                {/* Outer frame */}
-                <rect x="10" y="10" width="280" height="280" fill="rgba(2, 6, 23, 0.6)" stroke="rgba(34, 211, 238, 0.5)" strokeWidth="2" />
-
-                {/* Title bar */}
-                <rect x="10" y="10" width="280" height="20" fill="rgba(34, 211, 238, 0.08)" />
-                <text x="90" y="25" fill="rgba(34, 211, 238, 0.8)" fontSize="12" fontFamily="monospace" fontWeight="bold">
-                    FULL_SCAN_RADAR
+            <svg viewBox="0 0 200 200" className="w-full h-full">
+                {/* Frame */}
+                <rect x="5" y="5" width="190" height="190" fill={`${p.primaryHex}1A`} stroke={`${p.primaryHex}90`} strokeWidth="2" />
+                {/* Title */}
+                <rect x="5" y="5" width="190" height="16" fill={`${p.primaryHex}30`} />
+                <text x="100" y="17" fill={`${p.primaryHex}`} fontSize="9" fontFamily="monospace" fontWeight="bold" textAnchor="middle" style={{ textShadow: `0 0 6px ${p.primaryHex}` }}>
+                    TACTICAL_RADAR
                 </text>
 
-                {/* Concentric circles */}
-                <circle cx="150" cy="150" r="120" fill="none" stroke="rgba(34, 211, 238, 0.15)" strokeWidth="1" />
-                <circle cx="150" cy="150" r="90" fill="none" stroke="rgba(34, 211, 238, 0.2)" strokeWidth="1.5" />
-                <circle cx="150" cy="150" r="60" fill="none" stroke="rgba(34, 211, 238, 0.15)" strokeWidth="1" />
-                <circle cx="150" cy="150" r="30" fill="none" stroke="rgba(34, 211, 238, 0.1)" strokeWidth="1" />
+                {/* Circles - made significantly brighter */}
+                <circle cx="100" cy="110" r="75" fill="none" stroke={`${p.primaryHex}70`} strokeWidth="2" />
+                <circle cx="100" cy="110" r="50" fill="none" stroke={`${p.primaryHex}50`} strokeWidth="2" />
+                <circle cx="100" cy="110" r="25" fill={`${p.primaryHex}15`} stroke={`${p.primaryHex}50`} strokeWidth="2" />
 
-                {/* Center point - Self position */}
-                <circle cx="150" cy="150" r="5" fill="rgba(34, 211, 238, 1)" />
-                <circle cx="150" cy="150" r="12" fill="none" stroke="rgba(34, 211, 238, 0.6)" strokeWidth="1.5" />
+                {/* Cross */}
+                <line x1="100" y1="30" x2="100" y2="190" stroke={`${p.primaryHex}40`} strokeWidth="1.5" />
+                <line x1="20" y1="110" x2="180" y2="110" stroke={`${p.primaryHex}40`} strokeWidth="1.5" />
 
-                {/* Cardinal direction markers */}
-                {[
-                    { angle: 0, label: 'N', x: 150, y: 20 },
-                    { angle: 90, label: 'E', x: 280, y: 150 },
-                    { angle: 180, label: 'S', x: 150, y: 280 },
-                    { angle: 270, label: 'W', x: 20, y: 150 },
-                ].map((marker) => (
-                    <g key={marker.label}>
-                        <line x1={marker.x} y1={marker.y} x2="150" y2="150" stroke="rgba(34, 211, 238, 0.2)" strokeWidth="0.5" />
-                        <text x={marker.x} y={marker.y} fill="rgba(34, 211, 238, 0.6)" fontSize="11" fontFamily="monospace" fontWeight="bold" textAnchor="middle" dominantBaseline="middle">
-                            {marker.label}
-                        </text>
+                {/* Self */}
+                <circle cx="100" cy="110" r="5" fill={p.primaryHex} style={{ filter: `drop-shadow(0 0 8px ${p.primaryHex})` }} />
+                <circle cx="100" cy="110" r="10" fill="none" stroke={`${p.primaryHex}`} strokeWidth="2" />
+
+                {/* Sweep beam */}
+                <g>
+                    <animateTransform attributeName="transform" type="rotate" from="0 100 110" to="360 100 110" dur="4s" repeatCount="indefinite" />
+                    <line x1="100" y1="110" x2="100" y2="35" stroke={`${p.primaryHex}`} strokeWidth="3" style={{ filter: `drop-shadow(0 0 6px ${p.primaryHex})` }} />
+                    <path d="M100 110 L100 40 A70 70 0 0 1 155 65 Z" fill={`${p.primaryHex}40`} />
+                </g>
+
+                {/* Enemy blips */}
+                {blips.map(b => (
+                    <g key={b.id}>
+                        <circle cx={60 + b.x} cy={60 + b.y} r="3.5" fill={p.label === 'BATTLE' ? '#ffffff' : '#ff2222'}>
+                            <animate attributeName="opacity" values="0.4;1;0.4" dur="1.2s" repeatCount="indefinite" />
+                        </circle>
+                        <circle cx={60 + b.x} cy={60 + b.y} r="7" fill="none" stroke={p.label === 'BATTLE' ? '#ffffff' : '#ff2222'} strokeOpacity="0.6">
+                            <animate attributeName="r" values="6;11;6" dur="1.5s" repeatCount="indefinite" />
+                            <animate attributeName="opacity" values="0.6;0;0.6" dur="1.5s" repeatCount="indefinite" />
+                        </circle>
                     </g>
                 ))}
 
-                {/* Degree tick marks (every 15 degrees) */}
-                {Array.from({ length: 24 }).map((_, i) => {
-                    const angle = (i * 15 - 90) * (Math.PI / 180);
-                    const isMajor = i % 2 === 0;
-                    const length = isMajor ? 8 : 4;
-                    const x1 = 150 + (125) * Math.cos(angle);
-                    const y1 = 150 + (125) * Math.sin(angle);
-                    const x2 = 150 + (125 - length) * Math.cos(angle);
-                    const y2 = 150 + (125 - length) * Math.sin(angle);
-
-                    return (
-                        <line
-                            key={i}
-                            x1={x1}
-                            y1={y1}
-                            x2={x2}
-                            y2={y2}
-                            stroke={isMajor ? 'rgba(34, 211, 238, 0.5)' : 'rgba(34, 211, 238, 0.3)'}
-                            strokeWidth={isMajor ? 1.5 : 1}
-                        />
-                    );
-                })}
-
-                {/* Main sweeping radar beam with gradient */}
-                <motion.g
-                    initial={{ rotate: 0 }}
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
-                    style={{ transformOrigin: '150px 150px', transformBox: 'fill-box' } as any}
-                >
-                    {/* Outer sweep shadow */}
-                    <path
-                        d="M 150 150 L 150 40 A 110 110 0 0 1 235 65 Z"
-                        fill="url(#scanGradient)"
-                        opacity="0.45"
-                    />
-                    {/* Bright beam line */}
-                    <line x1="150" y1="150" x2="150" y2="35" stroke="rgba(34, 211, 238, 0.95)" strokeWidth="3" strokeLinecap="round" />
-                    {/* Sweep glow */}
-                    <circle cx="150" cy="150" r="115" fill="none" stroke="rgba(34, 211, 238, 0.2)" strokeWidth="6" opacity="0.4" />
-                </motion.g>
-
-                {/* Enemy blips on radar */}
-                {enemyBlips.map((blip) => (
-                    <g key={blip.id}>
-                        {/* Pulsing red marker */}
-                        <motion.circle
-                            cx={80 + blip.x}
-                            cy={80 + blip.y}
-                            r="4"
-                            fill="rgba(239, 68, 68, 1)"
-                            animate={{ opacity: [0.4, 1, 0.4], r: [4, 6, 4] }}
-                            transition={{ duration: 1.2, repeat: Infinity }}
-                        />
-                        {/* Outer glow */}
-                        <motion.circle
-                            cx={80 + blip.x}
-                            cy={80 + blip.y}
-                            r="8"
-                            fill="none"
-                            stroke="rgba(239, 68, 68, 0.5)"
-                            animate={{ r: [8, 12, 8], opacity: [0.6, 0.1, 0.6] }}
-                            transition={{ duration: 1.5, repeat: Infinity }}
-                        />
-                    </g>
-                ))}
-
-                {/* Friendly blips (blue) */}
-                <circle cx="130" cy="100" r="2.5" fill="rgba(34, 211, 238, 0.8)" />
-                <circle cx="170" cy="120" r="2" fill="rgba(148, 163, 184, 0.6)" />
-                <circle cx="160" cy="170" r="2.5" fill="rgba(34, 211, 238, 0.7)" />
-                <circle cx="120" cy="160" r="2" fill="rgba(148, 163, 184, 0.5)" />
-
-                {/* Gradient definitions */}
-                <defs>
-                    <radialGradient id="scanGradient" cx="0%" cy="0%" r="100%">
-                        <stop offset="0%" stopColor="rgba(34, 211, 238, 0.8)" />
-                        <stop offset="50%" stopColor="rgba(34, 211, 238, 0.4)" />
-                        <stop offset="100%" stopColor="rgba(34, 211, 238, 0)" />
-                    </radialGradient>
-                    <filter id="scanBlur">
-                        <feGaussianBlur in="SourceGraphic" stdDeviation="3" />
-                    </filter>
-                </defs>
-            </svg>
-
-            {/* Label below radar */}
-            <div className="absolute -top-6 left-0 right-0 text-center">
-                <span className="text-[9px] font-mono text-cyan-500/60 tracking-wider">ACTIVE_SCAN_MODE</span>
-            </div>
-        </motion.div>
-    );
-}
-
-/**
- * Circular gauge for mech output/weapon charge
- */
-/**
- * Enhanced Circular Gauge - Like the 145% gauge in reference image
- */
-function CircularGauge({ label, value, position = 'right' }: { label: string; value: number; position?: 'left' | 'right' }) {
-    const isLeft = position === 'left';
-
-    return (
-        <motion.div
-            className={`absolute ${isLeft ? 'left-16' : 'right-6'} ${isLeft ? 'bottom-24' : 'bottom-1/4'} w-36 h-36 md:w-44 md:h-44`}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.7 }}
-        >
-            <svg viewBox="0 0 140 140" className="w-full h-full">
-                {/* Outer decorative ring */}
-                <circle cx="70" cy="70" r="68" fill="none" stroke="rgba(34, 211, 238, 0.2)" strokeWidth="1" />
-
-                {/* Main gauge track with tick marks */}
-                <circle cx="70" cy="70" r="60" fill="rgba(34, 211, 238, 0.03)" stroke="rgba(34, 211, 238, 0.4)" strokeWidth="2" />
-
-                {/* Tick marks around the gauge */}
-                {[...Array(24)].map((_, i) => (
-                    <line key={i}
-                        x1="70" y1="14" x2="70" y2="20"
-                        stroke={i < (value / 100) * 24 ? 'rgba(34, 211, 238, 0.8)' : 'rgba(34, 211, 238, 0.2)'}
-                        strokeWidth="2"
-                        transform={`rotate(${i * 15} 70 70)`}
-                    />
-                ))}
-
-                {/* Progress arc */}
-                <motion.circle
-                    cx="70" cy="70" r="50"
-                    fill="none"
-                    stroke="rgba(34, 211, 238, 0.7)"
-                    strokeWidth="6"
-                    strokeDasharray={`${Math.min(value, 100) * 3.14} 999`}
-                    strokeLinecap="round"
-                    transform="rotate(-90 70 70)"
-                    initial={{ strokeDasharray: '0 999' }}
-                    animate={{ strokeDasharray: `${Math.min(value, 100) * 3.14} 999` }}
-                    transition={{ duration: 1.5, ease: 'easeOut' }}
-                />
-
-                {/* Inner rings */}
-                <circle cx="70" cy="70" r="42" fill="none" stroke="rgba(217, 70, 239, 0.3)" strokeWidth="1" strokeDasharray="4 4" />
-                <motion.circle
-                    cx="70" cy="70" r="35"
-                    fill="none"
-                    stroke="rgba(34, 211, 238, 0.4)"
-                    strokeWidth="1"
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-                    style={{ transformOrigin: '70px 70px' }}
-                    strokeDasharray="8 8"
-                />
-
-                {/* Center display */}
-                <circle cx="70" cy="70" r="28" fill="rgba(0, 0, 0, 0.5)" />
-                <text x="70" y="68" textAnchor="middle" fill="rgba(34, 211, 238, 1)" fontSize="18" fontFamily="monospace" fontWeight="bold">
-                    {value}%
-                </text>
-                <text x="70" y="84" textAnchor="middle" fill="rgba(148, 163, 184, 0.8)" fontSize="8" fontFamily="monospace">
-                    {label}
-                </text>
+                {/* Friendly blips removed to make radar fully dynamic */}
             </svg>
         </motion.div>
     );
 }
 
-/**
- * Status Bar Component
- */
-function StatusBar({ label, value, color, position }: { label: string; value: number; color: string; position: 'left' | 'right' }) {
+/* ================================================================
+   STATUS BAR + SIDE PANELS
+   ================================================================ */
+
+function StatusBarItem({ label, value, barColor, palette: p }: {
+    label: string; value: number; barColor: string; palette: HUDPalette;
+}) {
     return (
-        <div className={`flex items-center gap-2 ${position === 'right' ? 'flex-row-reverse' : ''}`}>
-            <span className="text-[10px] font-mono text-gray-500 w-12">{label}</span>
-            <div className="w-20 h-1.5 bg-gray-800 overflow-hidden" style={{ clipPath: 'polygon(2px 0, 100% 0, calc(100% - 2px) 100%, 0 100%)' }}>
+        <div className="flex items-center gap-2">
+            <span className="text-[9px] font-mono w-10" style={{ color: `${p.primaryHex}60` }}>{label}</span>
+            <div className="w-16 h-1.5 overflow-hidden" style={{ background: 'rgba(0,0,0,0.4)' }}>
                 <motion.div
                     className="h-full"
-                    style={{ backgroundColor: color }}
+                    style={{ backgroundColor: barColor }}
                     initial={{ width: 0 }}
                     animate={{ width: `${value}%` }}
-                    transition={{ duration: 1.5, ease: 'easeOut' }}
+                    transition={{ duration: 1.2, ease: 'easeOut' }}
                 />
             </div>
-            <span className="text-[10px] font-mono" style={{ color }}>{value}%</span>
+            <span className="text-[9px] font-mono" style={{ color: barColor }}>{value}%</span>
         </div>
     );
 }
 
-/**
- * Side Panel Component
- */
-function SidePanel({ position }: { position: 'left' | 'right' }) {
+function SidePanel({ position, palette: p }: { position: 'left' | 'right'; palette: HUDPalette }) {
     const isLeft = position === 'left';
 
     return (
         <motion.div
-            className={`absolute ${isLeft ? 'left-4' : 'right-4'} top-1/4 w-36 md:w-44`}
-            initial={{ opacity: 0, x: isLeft ? -50 : 50 }}
+            className={`absolute ${isLeft ? 'left-3' : 'right-3'} top-1/4 w-32 md:w-40 z-40`}
+            initial={{ opacity: 0, x: isLeft ? -30 : 30 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.8, duration: 0.6 }}
+            transition={{ delay: 0.7, duration: 0.5 }}
         >
-            {/* Panel frame */}
             <div
-                className="border border-cyan-500/30 bg-cyan-950/20 backdrop-blur-sm p-3"
+                className="border backdrop-blur-sm p-2.5"
                 style={{
+                    background: p.bg,
+                    borderColor: `${p.primaryHex}30`,
                     clipPath: isLeft
-                        ? 'polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%)'
-                        : 'polygon(0 0, 100% 0, 100% 100%, 12px 100%, 0 calc(100% - 12px))'
+                        ? 'polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)'
+                        : 'polygon(0 0, 100% 0, 100% 100%, 10px 100%, 0 calc(100% - 10px))',
                 }}
             >
-                <div className="text-[9px] font-mono text-cyan-500/60 mb-2 tracking-wider">
+                <div className="text-[8px] font-mono mb-2 tracking-wider" style={{ color: `${p.primaryHex}60` }}>
                     {isLeft ? '[SYSTEM_STATUS]' : '[PILOT_VITALS]'}
                 </div>
-
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                     {isLeft ? (
                         <>
-                            <StatusBar label="PWR" value={98} color="#22d3ee" position={position} />
-                            <StatusBar label="SYNC" value={87} color="#a855f7" position={position} />
-                            <StatusBar label="ARM" value={100} color="#22c55e" position={position} />
-                            <StatusBar label="SHD" value={92} color="#22d3ee" position={position} />
+                            <StatusBarItem label="PWR" value={98} barColor={p.primaryHex} palette={p} />
+                            <StatusBarItem label="SYNC" value={87} barColor={p.accentHex} palette={p} />
+                            <StatusBarItem label="ARM" value={100} barColor="#22c55e" palette={p} />
+                            <StatusBarItem label="SHD" value={92} barColor={p.primaryHex} palette={p} />
                         </>
                     ) : (
                         <>
-                            <StatusBar label="HEART" value={72} color="#ef4444" position={position} />
-                            <StatusBar label="SYNC" value={95} color="#22d3ee" position={position} />
-                            <StatusBar label="FOCUS" value={88} color="#a855f7" position={position} />
-                            <StatusBar label="STAM" value={81} color="#22c55e" position={position} />
+                            <StatusBarItem label="HEART" value={72} barColor="#ef4444" palette={p} />
+                            <StatusBarItem label="SYNC" value={95} barColor={p.primaryHex} palette={p} />
+                            <StatusBarItem label="FOCUS" value={88} barColor={p.accentHex} palette={p} />
+                            <StatusBarItem label="STAM" value={81} barColor="#22c55e" palette={p} />
                         </>
                     )}
                 </div>
@@ -698,195 +699,110 @@ function SidePanel({ position }: { position: 'left' | 'right' }) {
     );
 }
 
-/**
- * Mech profile card showing unit silhouette and ID
- */
-function MechProfilePanel() {
+/* ================================================================
+   CIRCULAR GAUGE (right side)
+   ================================================================ */
+
+function CircularGauge({ label, value, palette: p }: { label: string; value: number; palette: HUDPalette }) {
     return (
         <motion.div
-            className="absolute left-6 top-10 w-60 md:w-72 border border-cyan-500/40 bg-cyan-950/25 backdrop-blur-sm p-3"
-            initial={{ opacity: 0, y: -30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            style={{ clipPath: 'polygon(12px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 12px)' }}
+            className="absolute right-4 bottom-1/4 w-32 h-32 md:w-40 md:h-40 z-40"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.8 }}
         >
-            <div className="flex items-center justify-between text-[10px] font-mono text-cyan-500/70 mb-2">
-                <span>IDENT PROC: 227.09</span>
-                <span>MODEL: RX-0</span>
-            </div>
-            <div className="relative h-28 border border-cyan-500/30 bg-gradient-to-br from-cyan-500/5 via-transparent to-magenta-500/10 flex items-center justify-center">
-                <div className="absolute inset-0" style={{ background: 'repeating-linear-gradient(90deg, rgba(34,211,238,0.06), rgba(34,211,238,0.06) 1px, transparent 1px, transparent 6px)' }} />
-                <div className="absolute inset-0" style={{ background: 'repeating-linear-gradient(0deg, rgba(34,211,238,0.05), rgba(34,211,238,0.05) 1px, transparent 1px, transparent 6px)' }} />
-                <div className="relative w-16 h-24 border border-cyan-400/60" style={{ clipPath: 'polygon(6px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 6px)' }}>
-                    <div className="absolute inset-1 bg-cyan-500/10" />
-                    <div className="absolute inset-0 flex flex-col items-center justify-center text-[9px] text-cyan-300">
-                        <span className="mb-1">MECH</span>
-                        <span className="font-bold">RX-0</span>
-                        <span className="text-[8px] text-cyan-200/60">UNICORN</span>
-                    </div>
-                </div>
-            </div>
-            <div className="mt-3 flex items-center justify-between text-[11px] font-['JetBrains Mono'] text-cyan-100">
-                <span>UNICORN</span>
-                <span className="text-magenta-300">TARGET LOCK</span>
-            </div>
-        </motion.div>
-    );
-}
+            <svg viewBox="0 0 140 140" className="w-full h-full">
+                <circle cx="70" cy="70" r="65" fill="none" stroke={`${p.primaryHex}20`} strokeWidth="1" />
+                <circle cx="70" cy="70" r="56" fill={`${p.primaryHex}05`} stroke={`${p.primaryHex}40`} strokeWidth="1.5" />
 
-/**
- * Horizon Line Component
- */
-function HorizonLine() {
-    return (
-        <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 pointer-events-none">
-            {/* Main horizon */}
-            <div className="relative h-px w-full">
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
-            </div>
-
-            {/* Tick marks */}
-            <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-8">
-                {[-3, -2, -1, 0, 1, 2, 3].map((i) => (
-                    <div key={i} className="flex flex-col items-center">
-                        <div className={`w-px ${i === 0 ? 'h-4 bg-cyan-400' : 'h-2 bg-cyan-500/40'}`} />
-                        {i === 0 && (
-                            <span className="text-[8px] font-mono text-cyan-400 mt-1">0°</span>
-                        )}
-                    </div>
+                {/* Tick marks */}
+                {[...Array(24)].map((_, i) => (
+                    <line key={i}
+                        x1="70" y1="16" x2="70" y2="22"
+                        stroke={i < (Math.min(value, 150) / 150) * 24 ? `${p.primaryHex}C0` : `${p.primaryHex}25`}
+                        strokeWidth="2"
+                        transform={`rotate(${i * 15} 70 70)`}
+                    />
                 ))}
-            </div>
-        </div>
-    );
-}
 
-/**
- * Speed/Altitude Indicators
- */
-function FlightData() {
-    const [altitude, setAltitude] = useState(15420);
-    const [speed, setSpeed] = useState(342);
+                {/* Arc */}
+                <motion.circle
+                    cx="70" cy="70" r="48"
+                    fill="none"
+                    stroke={p.primaryHex}
+                    strokeWidth="5"
+                    strokeDasharray={`${Math.min(value, 150) / 150 * 301} 999`}
+                    strokeLinecap="round"
+                    transform="rotate(-90 70 70)"
+                    initial={{ strokeDasharray: '0 999' }}
+                    animate={{ strokeDasharray: `${Math.min(value, 150) / 150 * 301} 999` }}
+                    transition={{ duration: 1.5, ease: 'easeOut' }}
+                    style={{ filter: `drop-shadow(0 0 4px ${p.primaryHex})` }}
+                />
 
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setAltitude(prev => prev + Math.floor(Math.random() * 20 - 10));
-            setSpeed(prev => Math.max(300, Math.min(400, prev + Math.floor(Math.random() * 10 - 5))));
-        }, 1000);
-        return () => clearInterval(interval);
-    }, []);
-
-    return (
-        <>
-            {/* Altitude - Left side */}
-            <motion.div
-                className="absolute left-4 top-1/2 -translate-y-1/2"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1 }}
-            >
-                <div className="border-l-2 border-cyan-500/40 pl-2 py-4">
-                    <div className="text-[9px] font-mono text-cyan-500/60 mb-1">ALT</div>
-                    <div className="text-lg font-mono text-cyan-400 tabular-nums">{altitude.toLocaleString()}</div>
-                    <div className="text-[9px] font-mono text-gray-600">METERS</div>
-                </div>
-            </motion.div>
-
-            {/* Speed - Right side */}
-            <motion.div
-                className="absolute right-4 top-1/2 -translate-y-1/2"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1 }}
-            >
-                <div className="border-r-2 border-cyan-500/40 pr-2 py-4 text-right">
-                    <div className="text-[9px] font-mono text-cyan-500/60 mb-1">VEL</div>
-                    <div className="text-lg font-mono text-cyan-400 tabular-nums">{speed}</div>
-                    <div className="text-[9px] font-mono text-gray-600">KM/H</div>
-                </div>
-            </motion.div>
-        </>
-    );
-}
-
-/**
- * Compass/Heading Indicator
- */
-function CompassBar() {
-    return (
-        <motion.div
-            className="absolute top-8 left-1/2 -translate-x-1/2 w-64 md:w-80"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-        >
-            <div className="relative h-6 border border-cyan-500/30 bg-cyan-950/20 overflow-hidden">
-                {/* Compass markings */}
-                <motion.div
-                    className="absolute inset-0 flex items-center justify-center gap-8 text-[10px] font-mono"
-                    animate={{ x: [0, -20, 0] }}
-                    transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
-                >
-                    <span className="text-gray-600">270°</span>
-                    <span className="text-gray-600">315°</span>
-                    <span className="text-cyan-400 font-bold">N</span>
-                    <span className="text-gray-600">045°</span>
-                    <span className="text-gray-600">090°</span>
-                </motion.div>
-
-                {/* Center indicator */}
-                <div className="absolute left-1/2 -translate-x-1/2 top-0 w-0.5 h-2 bg-magenta-400" />
-                <div className="absolute left-1/2 -translate-x-1/2 bottom-0 w-0.5 h-2 bg-magenta-400" />
-            </div>
-            <div className="text-center mt-1">
-                <span className="text-[9px] font-mono text-cyan-500/60">HEADING: 358°</span>
-            </div>
+                {/* Center */}
+                <circle cx="70" cy="70" r="26" fill="rgba(0,0,0,0.5)" />
+                <text x="70" y="68" textAnchor="middle" fill={p.primaryHex} fontSize="16" fontFamily="monospace" fontWeight="bold">
+                    {value}%
+                </text>
+                <text x="70" y="82" textAnchor="middle" fill={`${p.primaryHex}80`} fontSize="7" fontFamily="monospace">
+                    {label}
+                </text>
+            </svg>
         </motion.div>
     );
 }
 
-/**
- * Warning Indicators
- */
-function WarningPanel({ mode }: { mode: CombatMode }) {
-    const isCombat = mode === 'COMBAT';
-    const isScan = mode === 'SCAN';
+/* ================================================================
+   BOTTOM WARNING INDICATORS
+   ================================================================ */
 
+function WarningIndicators({ palette: p, isBattle }: { palette: HUDPalette; isBattle: boolean }) {
     return (
         <motion.div
-            className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4"
+            className="absolute bottom-7 left-1/2 -translate-x-1/2 flex items-center gap-3 z-40"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 1.2 }}
+            transition={{ delay: 1 }}
         >
-            <div className={`flex items-center gap-2 px-3 py-1 border ${isCombat ? 'bg-red-500/10 border-red-500/40' : 'bg-green-500/10 border-green-500/30'}`}>
+            <div className="flex items-center gap-2 px-3 py-1 border" style={{
+                background: isBattle ? 'rgba(255,50,50,0.08)' : 'rgba(34,211,238,0.05)',
+                borderColor: isBattle ? 'rgba(255,50,50,0.4)' : 'rgba(34,211,238,0.3)',
+            }}>
                 <motion.div
-                    className={`w-2 h-2 rounded-full ${isCombat ? 'bg-red-400' : 'bg-green-400'}`}
-                    animate={{ opacity: [1, 0.5, 1] }}
-                    transition={{ duration: isCombat ? 0.6 : 2, repeat: Infinity }}
+                    className="w-1.5 h-1.5 rounded-full"
+                    style={{ background: isBattle ? '#ff3232' : '#4ade80' }}
+                    animate={{ opacity: [1, 0.4, 1] }}
+                    transition={{ duration: isBattle ? 0.5 : 2, repeat: Infinity }}
                 />
-                <span className={`text-[10px] font-mono ${isCombat ? 'text-red-300' : 'text-green-400'}`}>
-                    {isCombat ? 'ALERT: HOSTILE LOCK DETECTED' : 'SYSTEMS NOMINAL'}
+                <span className="text-[9px] font-mono" style={{ color: isBattle ? '#ff6060' : '#4ade80' }}>
+                    {isBattle ? 'COMBAT ALERT — ENGAGE' : 'SYSTEMS NOMINAL'}
                 </span>
             </div>
 
-            <div className={`flex items-center gap-2 px-3 py-1 border ${isScan ? 'bg-magenta-500/10 border-magenta-500/35' : 'bg-cyan-500/10 border-cyan-500/30'}`}>
+            <div className="flex items-center gap-2 px-3 py-1 border" style={{
+                background: p.alertBg,
+                borderColor: p.alertBorder,
+            }}>
                 <motion.div
-                    className={`w-2 h-2 rounded-full ${isScan ? 'bg-magenta-400' : 'bg-cyan-400'}`}
-                    animate={{ opacity: [1, 0.5, 1] }}
-                    transition={{ duration: isScan ? 0.8 : 1.5, repeat: Infinity }}
+                    className="w-1.5 h-1.5 rounded-full"
+                    style={{ background: p.primaryHex }}
+                    animate={{ opacity: [1, 0.4, 1] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
                 />
-                <span className={`text-[10px] font-mono ${isScan ? 'text-magenta-300' : 'text-cyan-400'}`}>
-                    {isScan ? 'WIDE SCAN SWEEP IN PROGRESS' : 'NEURAL LINK ACTIVE'}
+                <span className="text-[9px] font-mono" style={{ color: p.alertText }}>
+                    NEURAL LINK ACTIVE
                 </span>
             </div>
         </motion.div>
     );
 }
 
-/**
- * Telemetry strip for quick mech stats
- */
-function TelemetryStrip() {
+/* ================================================================
+   BOTTOM TELEMETRY STRIP
+   ================================================================ */
+
+function TelemetryStrip({ palette: p }: { palette: HUDPalette }) {
     const items = [
         { label: 'CORE TEMP', value: '62°C' },
         { label: 'REACTOR', value: '145%' },
@@ -896,687 +812,354 @@ function TelemetryStrip() {
 
     return (
         <motion.div
-            className="absolute bottom-20 left-1/2 -translate-x-1/2 flex items-center gap-3 px-4 py-2 bg-cyan-950/30 border border-cyan-500/30 backdrop-blur-sm"
+            className="absolute bottom-16 left-1/2 -translate-x-1/2 flex items-center gap-3 px-4 py-1.5 border backdrop-blur-sm z-40"
+            style={{
+                background: p.bg,
+                borderColor: `${p.primaryHex}30`,
+                clipPath: 'polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px)',
+            }}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.9 }}
-            style={{ clipPath: 'polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)' }}
+            transition={{ delay: 0.8 }}
         >
             {items.map(({ label, value }) => (
-                <div key={label} className="flex items-center gap-2 text-[10px] font-mono text-cyan-100">
-                    <span className="text-cyan-500/60">{label}</span>
-                    <span className="text-magenta-300 font-semibold">{value}</span>
-                    <div className="w-8 h-px bg-gradient-to-r from-cyan-500/50 to-transparent" />
+                <div key={label} className="flex items-center gap-1.5 text-[9px] font-mono">
+                    <span style={{ color: `${p.primaryHex}60` }}>{label}</span>
+                    <span style={{ color: p.accentHex, fontWeight: 600 }}>{value}</span>
+                    <div className="w-6 h-px" style={{ background: `linear-gradient(90deg, ${p.primaryHex}50, transparent)` }} />
                 </div>
             ))}
         </motion.div>
     );
 }
 
-/**
- * Floating Energy Particles - Auto loop effect
- */
-function FloatingParticles() {
-    const particles = useMemo(() => {
-        return [...Array(40)].map((_, i) => ({
-            id: i,
-            startX: Math.random() * 100,
-            startY: Math.random() * 100,
-            size: Math.random() * 4 + 2,
-            duration: 8 + Math.random() * 12,
-            delay: Math.random() * 5,
-            type: ['hexagon', 'circle', 'diamond'][Math.floor(Math.random() * 3)] as 'hexagon' | 'circle' | 'diamond',
-            color: ['cyan', 'magenta', 'green'][Math.floor(Math.random() * 3)] as 'cyan' | 'magenta' | 'green',
-        }));
-    }, []);
+/* ================================================================
+   HELMET EDGE WARNINGS
+   ================================================================ */
 
-    const colorMap = {
-        cyan: 'rgba(34, 211, 238, 0.6)',
-        magenta: 'rgba(217, 70, 239, 0.6)',
-        green: 'rgba(163, 230, 53, 0.5)',
-    };
-
+const HelmetEdgeWarnings = memo(function HelmetEdgeWarnings({ palette: p }: { palette: HUDPalette }) {
     return (
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            {particles.map((p) => (
-                <motion.div
-                    key={p.id}
-                    className="absolute"
-                    style={{
-                        left: `${p.startX}%`,
-                        top: `${p.startY}%`,
-                    }}
-                    animate={{
-                        y: [0, -150, -300],
-                        x: [0, Math.random() * 60 - 30, Math.random() * 100 - 50],
-                        opacity: [0, 0.8, 0],
-                        scale: [0.5, 1, 0.3],
-                        rotate: [0, 180, 360],
-                    }}
-                    transition={{
-                        duration: p.duration,
-                        repeat: Infinity,
-                        delay: p.delay,
-                        ease: 'linear',
-                    }}
-                >
-                    {p.type === 'hexagon' && (
-                        <svg width={p.size * 4} height={p.size * 4} viewBox="0 0 24 24">
-                            <polygon
-                                points="12,2 22,8.5 22,15.5 12,22 2,15.5 2,8.5"
-                                fill="none"
-                                stroke={colorMap[p.color]}
-                                strokeWidth="1"
-                            />
-                        </svg>
-                    )}
-                    {p.type === 'circle' && (
-                        <div
-                            style={{
-                                width: p.size * 3,
-                                height: p.size * 3,
-                                borderRadius: '50%',
-                                border: `1px solid ${colorMap[p.color]}`,
-                                boxShadow: `0 0 ${p.size}px ${colorMap[p.color]}`,
-                            }}
-                        />
-                    )}
-                    {p.type === 'diamond' && (
-                        <div
-                            style={{
-                                width: p.size * 2,
-                                height: p.size * 2,
-                                backgroundColor: colorMap[p.color],
-                                transform: 'rotate(45deg)',
-                            }}
-                        />
-                    )}
-                </motion.div>
-            ))}
+        <div className="absolute inset-0 pointer-events-none z-30">
+            <div className="absolute left-0.5 top-1/2 -translate-y-1/2 hidden md:flex flex-col items-center gap-2">
+                <div className="h-32 w-px" style={{ background: `linear-gradient(to bottom, transparent, ${p.primaryHex}50, transparent)` }} />
+                <span className="text-[8px] font-mono [writing-mode:vertical-rl]" style={{ color: `${p.primaryHex}60` }}>
+                    CAUTION::BLIND_ZONE
+                </span>
+                <div className="h-32 w-px" style={{ background: `linear-gradient(to bottom, transparent, ${p.primaryHex}40, transparent)` }} />
+            </div>
+            <div className="absolute right-0.5 top-1/2 -translate-y-1/2 hidden md:flex flex-col items-center gap-2">
+                <div className="h-32 w-px" style={{ background: `linear-gradient(to bottom, transparent, ${p.primaryHex}50, transparent)` }} />
+                <span className="text-[8px] font-mono [writing-mode:vertical-rl]" style={{ color: `${p.primaryHex}60` }}>
+                    THREAT_SCAN::ACTIVE
+                </span>
+                <div className="h-32 w-px" style={{ background: `linear-gradient(to bottom, transparent, ${p.primaryHex}40, transparent)` }} />
+            </div>
         </div>
     );
-}
+});
 
-/**
- * Energy Pulse Waves - Expanding rings effect
- */
-function EnergyPulseWaves() {
+/* ================================================================
+   CORNER FRAME DECORATIONS
+   ================================================================ */
+
+const CornerDecorations = memo(function CornerDecorations({ palette: p }: { palette: HUDPalette }) {
+    const color = `${p.primaryHex}50`;
     return (
-        <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-            {[0, 1, 2].map((i) => (
-                <motion.div
-                    key={i}
-                    className="absolute rounded-full border border-cyan-500/30"
+        <>
+            <svg className="absolute top-3 left-3 w-14 h-14 z-40" style={{ color }}>
+                <path d="M0 36 L0 0 L36 0" stroke="currentColor" strokeWidth="2" fill="none" />
+                <path d="M8 26 L8 8 L26 8" stroke="currentColor" strokeWidth="1" fill="none" />
+            </svg>
+            <svg className="absolute top-3 right-3 w-14 h-14 z-40" style={{ color }}>
+                <path d="M56 36 L56 0 L20 0" stroke="currentColor" strokeWidth="2" fill="none" />
+                <path d="M48 26 L48 8 L30 8" stroke="currentColor" strokeWidth="1" fill="none" />
+            </svg>
+            <svg className="absolute bottom-3 left-3 w-14 h-14 z-40" style={{ color }}>
+                <path d="M0 20 L0 56 L36 56" stroke="currentColor" strokeWidth="2" fill="none" />
+                <path d="M8 30 L8 48 L26 48" stroke="currentColor" strokeWidth="1" fill="none" />
+            </svg>
+            <svg className="absolute bottom-3 right-3 w-14 h-14 z-40" style={{ color }}>
+                <path d="M56 20 L56 56 L20 56" stroke="currentColor" strokeWidth="2" fill="none" />
+                <path d="M48 30 L48 48 L30 48" stroke="currentColor" strokeWidth="1" fill="none" />
+            </svg>
+        </>
+    );
+});
+
+/* ================================================================
+   ATMOSPHERIC FX — CSS-animated background effects
+   ================================================================ */
+
+/** Floating energy particles — CSS-only loop */
+const FloatingParticlesFX = memo(function FloatingParticlesFX({ palette: p }: { palette: HUDPalette }) {
+    const particles = useMemo(() =>
+        [...Array(30)].map((_, i) => ({
+            id: i,
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+            size: 2 + Math.random() * 4,
+            dur: `${8 + Math.random() * 12}s`,
+            delay: `${Math.random() * 6}s`,
+            color: [p.primaryHex, p.accentHex, '#a3e635'][Math.floor(Math.random() * 3)],
+            shape: ['circle', 'diamond', 'hex'][Math.floor(Math.random() * 3)],
+        })), [p.primaryHex, p.accentHex]
+    );
+
+    return (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-10">
+            {particles.map(pt => (
+                <div
+                    key={pt.id}
+                    className="absolute hud-float-particle"
                     style={{
-                        width: 100,
-                        height: 100,
-                    }}
-                    animate={{
-                        width: [100, 800],
-                        height: [100, 800],
-                        opacity: [0.5, 0],
-                        borderWidth: [2, 0.5],
-                    }}
-                    transition={{
-                        duration: 4,
-                        repeat: Infinity,
-                        delay: i * 1.3,
-                        ease: 'easeOut',
+                        left: pt.left,
+                        top: pt.top,
+                        width: pt.size,
+                        height: pt.size,
+                        animationDuration: pt.dur,
+                        animationDelay: pt.delay,
+                        ...(pt.shape === 'circle'
+                            ? { borderRadius: '50%', border: `1px solid ${pt.color}80`, boxShadow: `0 0 ${pt.size}px ${pt.color}40` }
+                            : pt.shape === 'diamond'
+                                ? { backgroundColor: `${pt.color}60`, transform: 'rotate(45deg)' }
+                                : { border: `1px solid ${pt.color}60`, clipPath: 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)' }
+                        ),
                     }}
                 />
             ))}
         </div>
     );
-}
+});
 
-/**
- * Data Stream Lines - Vertical flowing data
- */
-function DataStreamLines() {
-    const streams = useMemo(() => {
-        return [...Array(15)].map((_, i) => ({
+/** Data stream lines — CSS-only vertical lines flowing down */
+const DataStreamsFX = memo(function DataStreamsFX({ palette: p }: { palette: HUDPalette }) {
+    const streams = useMemo(() =>
+        [...Array(12)].map((_, i) => ({
             id: i,
-            x: 5 + (i * 6.5),
-            duration: 3 + Math.random() * 4,
-            delay: Math.random() * 3,
-            height: 50 + Math.random() * 100,
-        }));
-    }, []);
+            left: `${6 + i * 7.5}%`,
+            height: 40 + Math.random() * 80,
+            dur: `${3 + Math.random() * 4}s`,
+            delay: `${Math.random() * 3}s`,
+        })), []
+    );
 
     return (
-        <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-40">
-            {streams.map((stream) => (
-                <motion.div
-                    key={stream.id}
-                    className="absolute w-px"
+        <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-30 z-10">
+            {streams.map(s => (
+                <div
+                    key={s.id}
+                    className="absolute w-px hud-data-stream"
                     style={{
-                        left: `${stream.x}%`,
-                        height: stream.height,
-                        background: 'linear-gradient(to bottom, transparent, rgba(34, 211, 238, 0.8), transparent)',
-                    }}
-                    animate={{
-                        top: ['-10%', '110%'],
-                        opacity: [0, 1, 0],
-                    }}
-                    transition={{
-                        duration: stream.duration,
-                        repeat: Infinity,
-                        delay: stream.delay,
-                        ease: 'linear',
+                        left: s.left,
+                        height: s.height,
+                        background: `linear-gradient(to bottom, transparent, ${p.primaryHex}C0, transparent)`,
+                        animationDuration: s.dur,
+                        animationDelay: s.delay,
                     }}
                 />
             ))}
         </div>
     );
-}
+});
 
-/**
- * Holographic Grid Effect
- */
-function HolographicGrid() {
+/** Holographic grid — CSS animated */
+const HolographicGrid = memo(function HolographicGrid({ palette: p }: { palette: HUDPalette }) {
     return (
-        <motion.div
-            className="absolute inset-0 pointer-events-none opacity-20"
+        <div
+            className="absolute inset-0 pointer-events-none opacity-15 z-10 hud-grid-move"
             style={{
                 backgroundImage: `
-                    linear-gradient(rgba(34, 211, 238, 0.15) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(34, 211, 238, 0.15) 1px, transparent 1px)
+                    linear-gradient(${p.primaryHex}18 1px, transparent 1px),
+                    linear-gradient(90deg, ${p.primaryHex}18 1px, transparent 1px)
                 `,
                 backgroundSize: '50px 50px',
             }}
-            animate={{
-                backgroundPosition: ['0px 0px', '50px 50px'],
-            }}
-            transition={{
-                duration: 8,
-                repeat: Infinity,
-                ease: 'linear',
-            }}
         />
     );
-}
+});
 
-/**
- * Floating Tech Debris - Space debris floating
- */
-function FloatingDebris() {
-    const debris = useMemo(() => {
-        return [...Array(20)].map((_, i) => ({
-            id: i,
-            x: Math.random() * 100,
-            y: Math.random() * 100,
-            size: 3 + Math.random() * 8,
-            duration: 15 + Math.random() * 20,
-            rotationDuration: 5 + Math.random() * 10,
-        }));
-    }, []);
-
+/** Scanning beam */
+function ScanningBeam({ palette: p }: { palette: HUDPalette }) {
     return (
-        <div className="absolute inset-0 pointer-events-none">
-            {debris.map((d) => (
-                <motion.div
-                    key={d.id}
-                    className="absolute"
-                    style={{
-                        left: `${d.x}%`,
-                        top: `${d.y}%`,
-                    }}
-                    animate={{
-                        x: [0, Math.random() * 100 - 50, 0],
-                        y: [0, Math.random() * 80 - 40, 0],
-                    }}
-                    transition={{
-                        duration: d.duration,
-                        repeat: Infinity,
-                        ease: 'easeInOut',
-                    }}
-                >
-                    <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{
-                            duration: d.rotationDuration,
-                            repeat: Infinity,
-                            ease: 'linear',
-                        }}
-                    >
-                        <div
-                            className="border border-cyan-500/30 bg-cyan-500/5"
-                            style={{
-                                width: d.size,
-                                height: d.size,
-                                clipPath: 'polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)',
-                            }}
-                        />
-                    </motion.div>
-                </motion.div>
-            ))}
-        </div>
-    );
-}
-
-/**
- * Energy Core Pulse - Central glowing effect
- */
-function EnergyCorePulse() {
-    return (
-        <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-            <motion.div
-                className="relative"
-                animate={{
-                    scale: [1, 1.1, 1],
-                }}
-                transition={{
-                    duration: 3,
-                    repeat: Infinity,
-                    ease: 'easeInOut',
-                }}
-            >
-                {/* Core glow */}
-                <motion.div
-                    className="absolute rounded-full"
-                    style={{
-                        width: 200,
-                        height: 200,
-                        left: -100,
-                        top: -100,
-                        background: 'radial-gradient(circle, rgba(34, 211, 238, 0.15) 0%, transparent 70%)',
-                    }}
-                    animate={{
-                        opacity: [0.3, 0.6, 0.3],
-                    }}
-                    transition={{
-                        duration: 2,
-                        repeat: Infinity,
-                    }}
-                />
-                {/* Secondary glow */}
-                <motion.div
-                    className="absolute rounded-full"
-                    style={{
-                        width: 300,
-                        height: 300,
-                        left: -150,
-                        top: -150,
-                        background: 'radial-gradient(circle, rgba(217, 70, 239, 0.1) 0%, transparent 60%)',
-                    }}
-                    animate={{
-                        opacity: [0.2, 0.4, 0.2],
-                        scale: [1, 1.2, 1],
-                    }}
-                    transition={{
-                        duration: 4,
-                        repeat: Infinity,
-                    }}
-                />
-            </motion.div>
-        </div>
-    );
-}
-
-/**
- * Scanning Beam Effect
- */
-function ScanningBeam() {
-    return (
-        <motion.div
-            className="absolute left-0 right-0 h-px pointer-events-none"
+        <div
+            className="absolute left-0 right-0 h-px pointer-events-none z-20 hud-scan-beam"
             style={{
-                background: 'linear-gradient(90deg, transparent, rgba(34, 211, 238, 0.5) 20%, rgba(34, 211, 238, 0.8) 50%, rgba(34, 211, 238, 0.5) 80%, transparent)',
-                boxShadow: '0 0 20px 2px rgba(34, 211, 238, 0.4)',
-            }}
-            animate={{
-                top: ['0%', '100%'],
-                opacity: [0, 0.6, 0],
-            }}
-            transition={{
-                duration: 6,
-                repeat: Infinity,
-                ease: 'linear',
-                repeatDelay: 3,
+                background: `linear-gradient(90deg, transparent, ${p.primaryHex}50 20%, ${p.primaryHex}C0 50%, ${p.primaryHex}50 80%, transparent)`,
+                boxShadow: `0 0 18px 2px ${p.primaryHex}50`,
             }}
         />
     );
 }
 
-/**
- * Circuit Trace Animation
- */
-function CircuitTraces() {
-    const traces = useMemo(() => [
-        { id: 1, path: 'M0,50 L100,50 L100,150 L200,150', x: '5%', y: '20%' },
-        { id: 2, path: 'M0,0 L80,0 L80,100 L150,100', x: '70%', y: '60%' },
-        { id: 3, path: 'M50,0 L50,80 L150,80 L150,150', x: '20%', y: '70%' },
-        { id: 4, path: 'M0,30 L60,30 L60,0 L120,0', x: '80%', y: '25%' },
-    ], []);
-
+/** Energy pulse rings from center */
+const EnergyPulseWaves = memo(function EnergyPulseWaves({ palette: p }: { palette: HUDPalette }) {
     return (
-        <div className="absolute inset-0 pointer-events-none opacity-30">
-            {traces.map((trace) => (
-                <svg
-                    key={trace.id}
-                    className="absolute"
-                    style={{ left: trace.x, top: trace.y }}
-                    width="200"
-                    height="150"
-                    viewBox="0 0 200 150"
-                >
-                    <path
-                        d={trace.path}
-                        fill="none"
-                        stroke="rgba(34, 211, 238, 0.3)"
-                        strokeWidth="1"
-                    />
-                    <motion.circle
-                        r="3"
-                        fill="rgba(34, 211, 238, 0.8)"
-                        animate={{
-                            offsetDistance: ['0%', '100%'],
-                            opacity: [0, 1, 0],
-                        }}
-                        transition={{
-                            duration: 3,
-                            repeat: Infinity,
-                            delay: trace.id * 0.8,
-                            ease: 'linear',
-                        }}
-                        style={{
-                            offsetPath: `path('${trace.path}')`,
-                        }}
-                    />
-                </svg>
+        <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-10">
+            {[0, 1, 2].map(i => (
+                <div
+                    key={i}
+                    className="absolute rounded-full hud-pulse-ring"
+                    style={{
+                        border: `1.5px solid ${p.primaryHex}30`,
+                        animationDelay: `${i * 1.4}s`,
+                    }}
+                />
             ))}
         </div>
     );
-}
+});
 
-/**
- * Helmet visor frame and glass reflections for immersive cockpit POV.
- */
-function HelmetVisorOverlay() {
+/* ================================================================
+   SCAN LINES OVERLAY
+   ================================================================ */
+
+const ScanlineOverlay = memo(function ScanlineOverlay() {
     return (
-        <div className="absolute inset-0 pointer-events-none z-20">
-            <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at center, rgba(0,0,0,0) 38%, rgba(2,6,23,0.82) 100%)' }} />
-
-            <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-slate-900/95 via-slate-900/70 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-slate-900/95 via-slate-900/65 to-transparent" />
-            <div className="absolute top-0 bottom-0 left-0 w-14 bg-gradient-to-r from-slate-900/90 to-transparent" />
-            <div className="absolute top-0 bottom-0 right-0 w-14 bg-gradient-to-l from-slate-900/90 to-transparent" />
-
-            <div className="absolute top-1/2 left-1/2 w-[92vw] max-w-[1400px] h-[92vh] -translate-x-1/2 -translate-y-1/2 rounded-[48px] border border-cyan-500/25" />
-            <div className="absolute top-1/2 left-1/2 w-[88vw] max-w-[1320px] h-[88vh] -translate-x-1/2 -translate-y-1/2 rounded-[42px] border border-cyan-500/10" />
-
-            <div
-                className="absolute top-10 right-[12%] w-64 h-28"
-                style={{
-                    background: 'linear-gradient(130deg, rgba(255,255,255,0.18), rgba(255,255,255,0.03) 40%, transparent 75%)',
-                    filter: 'blur(1px)',
-                    clipPath: 'polygon(8% 0, 100% 0, 92% 100%, 0 100%)',
-                }}
-            />
-
-            <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
-                <path
-                    d="M 10% 12% Q 50% 3%, 90% 12%"
-                    stroke="rgba(34, 211, 238, 0.35)"
-                    strokeWidth="2"
-                    fill="none"
-                />
-                <path
-                    d="M 16% 88% Q 50% 96%, 84% 88%"
-                    stroke="rgba(34, 211, 238, 0.22)"
-                    strokeWidth="2"
-                    fill="none"
-                />
-                <line x1="50%" y1="8%" x2="50%" y2="16%" stroke="rgba(34, 211, 238, 0.28)" strokeWidth="2" />
-                <line x1="50%" y1="84%" x2="50%" y2="92%" stroke="rgba(34, 211, 238, 0.28)" strokeWidth="2" />
-                <line x1="8%" y1="50%" x2="16%" y2="50%" stroke="rgba(34, 211, 238, 0.28)" strokeWidth="2" />
-                <line x1="84%" y1="50%" x2="92%" y2="50%" stroke="rgba(34, 211, 238, 0.28)" strokeWidth="2" />
-            </svg>
-        </div>
+        <div
+            className="absolute inset-0 pointer-events-none z-50 opacity-[0.08]"
+            style={{
+                backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(34,211,238,0.06) 2px, rgba(34,211,238,0.06) 4px)',
+            }}
+        />
     );
-}
+});
 
-/**
- * Top status strip similar to Gundam pilot helmet telemetry.
- */
-function CockpitStatusHeader({ mode }: { mode: CombatMode }) {
-    const modeColor = mode === 'COMBAT' ? 'text-red-300' : mode === 'SCAN' ? 'text-magenta-300' : 'text-cyan-200';
+/* ================================================================
+   CSS KEYFRAMES (injected once)
+   ================================================================ */
 
+const HUDStyles = memo(function HUDStyles() {
     return (
-        <motion.div
-            className="absolute top-4 left-1/2 -translate-x-1/2 z-30"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.35 }}
-        >
-            <div className="flex items-center gap-3 px-4 py-1.5 border border-cyan-500/40 bg-slate-950/60 backdrop-blur-sm text-[10px] font-mono text-cyan-300"
-                style={{ clipPath: 'polygon(10px 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 10px 100%, 0 50%)' }}>
-                <span className="text-cyan-500/70">PILOT_LINK</span>
-                <span className="text-green-400">STABLE</span>
-                <span className="text-cyan-500/30">|</span>
-                <span className="text-cyan-500/70">MODE</span>
-                <span className={modeColor}>{mode}</span>
-                <span className="text-cyan-500/30">|</span>
-                <span className="text-cyan-100">RX-0 UNICORN</span>
-            </div>
-        </motion.div>
+        <style>{`
+            @keyframes hud-float {
+                0%   { transform: translateY(0) rotate(0deg); opacity: 0; }
+                10%  { opacity: 0.7; }
+                90%  { opacity: 0.7; }
+                100% { transform: translateY(-200px) rotate(180deg); opacity: 0; }
+            }
+            .hud-float-particle {
+                animation: hud-float linear infinite;
+            }
+
+            @keyframes hud-stream {
+                0%   { top: -10%; opacity: 0; }
+                10%  { opacity: 1; }
+                90%  { opacity: 1; }
+                100% { top: 110%; opacity: 0; }
+            }
+            .hud-data-stream {
+                animation: hud-stream linear infinite;
+            }
+
+            @keyframes hud-grid-shift {
+                0%   { background-position: 0px 0px; }
+                100% { background-position: 50px 50px; }
+            }
+            .hud-grid-move {
+                animation: hud-grid-shift 8s linear infinite;
+            }
+
+            @keyframes hud-scan {
+                0%   { top: 0%; opacity: 0; }
+                5%   { opacity: 0.6; }
+                95%  { opacity: 0.6; }
+                100% { top: 100%; opacity: 0; }
+            }
+            .hud-scan-beam {
+                animation: hud-scan 7s linear infinite;
+                animation-delay: 3s;
+            }
+
+            @keyframes hud-pulse {
+                0%   { width: 80px; height: 80px; opacity: 0.5; }
+                100% { width: 700px; height: 700px; opacity: 0; }
+            }
+            .hud-pulse-ring {
+                animation: hud-pulse 4.5s ease-out infinite;
+            }
+
+            /* Smooth colour transition for HUD elements */
+            .hud-themed-container svg *,
+            .hud-themed-container svg,
+            .hud-themed-container div,
+            .hud-themed-container text,
+            .hud-themed-container span {
+                transition: stroke 0.6s ease-out, fill 0.6s ease-out, color 0.6s ease-out, background-color 0.6s ease-out, border-color 0.6s ease-out, text-shadow 0.6s ease-out;
+            }
+        `}</style>
     );
-}
+});
 
-function CombatModeChip({ mode }: { mode: CombatMode }) {
-    const modeStyle = mode === 'COMBAT'
-        ? 'text-red-300 border-red-500/45 bg-red-500/10'
-        : mode === 'SCAN'
-            ? 'text-magenta-300 border-magenta-500/45 bg-magenta-500/10'
-            : 'text-cyan-200 border-cyan-500/45 bg-cyan-500/10';
+/* ================================================================
+   MAIN COMPONENT
+   ================================================================ */
 
-    return (
-        <motion.div
-            className={`absolute right-5 top-16 px-3 py-1 text-[10px] font-mono border backdrop-blur-sm z-30 ${modeStyle}`}
-            initial={{ opacity: 0, x: 10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.45 }}
-            style={{ clipPath: 'polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%)' }}
-        >
-            MODE::{mode}
-        </motion.div>
-    );
-}
+export function PilotHUDBackground({ className = '', isBattle }: PilotHUDBackgroundProps) {
+    const [booted, setBooted] = useState(false);
 
-/**
- * Center lock overlay to make aiming and pilot focus feel intentional.
- */
-function CentralTargetLock() {
-    return (
-        <motion.div
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-30"
-            initial={{ opacity: 0, scale: 0.92 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.5 }}
-        >
-            <div className="relative w-48 h-48 md:w-56 md:h-56">
-                <motion.div
-                    className="absolute inset-0 border border-cyan-400/45"
-                    style={{ clipPath: 'polygon(16% 0, 84% 0, 100% 16%, 100% 84%, 84% 100%, 16% 100%, 0 84%, 0 16%)' }}
-                    animate={{ rotate: [0, 360] }}
-                    transition={{ duration: 22, repeat: Infinity, ease: 'linear' }}
-                />
-                <motion.div
-                    className="absolute inset-5 border border-magenta-400/30"
-                    style={{ clipPath: 'polygon(18% 0, 82% 0, 100% 18%, 100% 82%, 82% 100%, 18% 100%, 0 82%, 0 18%)' }}
-                    animate={{ rotate: [360, 0] }}
-                    transition={{ duration: 16, repeat: Infinity, ease: 'linear' }}
-                />
-                <div className="absolute left-1/2 top-1/2 w-24 md:w-28 h-px bg-gradient-to-r from-transparent via-cyan-400/70 to-transparent -translate-x-1/2 -translate-y-1/2" />
-                <div className="absolute left-1/2 top-1/2 h-24 md:h-28 w-px bg-gradient-to-b from-transparent via-cyan-400/70 to-transparent -translate-x-1/2 -translate-y-1/2" />
-                <div className="absolute left-1/2 top-[62%] -translate-x-1/2 text-[9px] font-mono text-cyan-300/80 tracking-wider">TARGET VECTOR ACQUIRED</div>
-            </div>
-        </motion.div>
-    );
-}
+    const palette = isBattle ? RED_PALETTE : CYAN_PALETTE;
 
-/**
- * Vertical warning rails on helmet edges like pilot visor side channels.
- */
-function HelmetEdgeWarnings() {
-    return (
-        <div className="absolute inset-0 pointer-events-none z-30">
-            <div className="absolute left-1 top-1/2 -translate-y-1/2 hidden md:flex flex-col items-center gap-2">
-                <div className="h-40 w-px bg-gradient-to-b from-transparent via-red-400/70 to-transparent" />
-                <span className="text-[9px] font-mono text-red-300/80 [writing-mode:vertical-rl]">CAUTION::BLIND_ZONE</span>
-                <div className="h-40 w-px bg-gradient-to-b from-transparent via-cyan-400/50 to-transparent" />
-            </div>
-
-            <div className="absolute right-1 top-1/2 -translate-y-1/2 hidden md:flex flex-col items-center gap-2">
-                <div className="h-40 w-px bg-gradient-to-b from-transparent via-red-400/70 to-transparent" />
-                <span className="text-[9px] font-mono text-red-300/80 [writing-mode:vertical-rl]">THREAT_SCAN::ACTIVE</span>
-                <div className="h-40 w-px bg-gradient-to-b from-transparent via-cyan-400/50 to-transparent" />
-            </div>
-        </div>
-    );
-}
-
-/**
- * Main Pilot HUD Background Component
- */
-export function PilotHUDBackground({ className = '' }: PilotHUDBackgroundProps) {
-    const [mode, setMode] = useState<CombatMode>('SCAN');
-
-    useEffect(() => {
-        const sequence: CombatMode[] = ['NORMAL', 'SCAN', 'COMBAT', 'SCAN'];
-        let index = 0;
-
-        const interval = setInterval(() => {
-            index = (index + 1) % sequence.length;
-            setMode(sequence[index]);
-        }, 4200);
-
-        return () => clearInterval(interval);
+    const handleBootComplete = useCallback(() => {
+        setBooted(true);
     }, []);
 
     return (
-        <div className={`absolute inset-0 overflow-hidden ${className}`}>
-            {/* Space background - Deep space gradient */}
+        <div className={`absolute inset-0 overflow-hidden hud-themed-container ${className}`}>
+            {/* Inject CSS keyframes */}
+            <HUDStyles />
+
+            {/* Space background */}
             <div className="absolute inset-0 bg-gradient-to-b from-black via-slate-950 to-black" />
 
-            {/* === AUTO LOOP EFFECTS === */}
-            {/* Floating energy particles */}
-            <FloatingParticles />
+            {/* === BOOT SEQUENCE === */}
+            <AnimatePresence>
+                {!booted && (
+                    <BootSequence onComplete={handleBootComplete} palette={CYAN_PALETTE} />
+                )}
+            </AnimatePresence>
 
-            {/* Energy pulse waves from center */}
-            <EnergyPulseWaves />
+            {/* === MAIN HUD (visible after boot) === */}
+            {booted && (
+                <motion.div
+                    className="absolute inset-0 pointer-events-none"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 1.2 }}
+                >
+                    {/* --- Atmospheric background FX --- */}
+                    <FloatingParticlesFX palette={palette} />
+                    <DataStreamsFX palette={palette} />
+                    <HolographicGrid palette={palette} />
+                    <EnergyPulseWaves palette={palette} />
+                    <ScanningBeam palette={palette} />
 
-            {/* Vertical data stream lines */}
-            <DataStreamLines />
+                    {/* Central vignette */}
+                    <div className="absolute inset-0 z-20" style={{
+                        background: 'radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.65) 100%)',
+                    }} />
 
-            {/* Moving holographic grid */}
-            <HolographicGrid />
+                    {/* --- Visor frame --- */}
+                    <VisorFrame palette={palette} />
 
-            {/* Floating tech debris */}
-            <FloatingDebris />
+                    {/* --- HUD Elements --- */}
+                    <TopStatusBar palette={palette} isBattle={isBattle} />
+                    <CompassBar palette={palette} />
+                    <CentralTargetingOptic palette={palette} />
+                    <TacticalRadar palette={palette} />
+                    <SidePanel position="left" palette={palette} />
+                    <SidePanel position="right" palette={palette} />
+                    <CircularGauge label="REACTOR" value={145} palette={palette} />
+                    <TelemetryStrip palette={palette} />
+                    <WarningIndicators palette={palette} isBattle={isBattle} />
+                    <HelmetEdgeWarnings palette={palette} />
+                    <CornerDecorations palette={palette} />
 
-            {/* Central energy core pulse */}
-            <EnergyCorePulse />
+                    {/* Battle mode button rendered outside this container */}
 
-            {/* Horizontal scanning beam */}
-            <ScanningBeam />
-
-            {/* Circuit trace animations */}
-            <CircuitTraces />
-
-            {/* Vignette effect - Cockpit frame shadow */}
-            <div
-                className="absolute inset-0"
-                style={{
-                    background: 'radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.7) 100%)'
-                }}
-            />
-
-            {/* Helmet visor frame */}
-            <HelmetVisorOverlay />
-
-            {/* Cockpit top status strip */}
-            <CockpitStatusHeader mode={mode} />
-
-            {/* Mode chip */}
-            <CombatModeChip mode={mode} />
-
-            {/* Central target lock overlay */}
-            <CentralTargetLock />
-
-            {/* Helmet side warnings */}
-            <HelmetEdgeWarnings />
-
-            {/* Vertical power gauge */}
-            <VerticalPowerGauge />
-
-            {/* Targeting reticles */}
-            <TargetingReticle x="25%" y="35%" size={120} delay={0} />
-            <TargetingReticle x="75%" y="40%" size={80} delay={0.5} />
-            <TargetingReticle x="50%" y="60%" size={150} delay={1} />
-            <TargetingReticle x="15%" y="70%" size={60} delay={1.5} />
-            <TargetingReticle x="85%" y="65%" size={70} delay={2} />
-
-            {/* Circular gauges - Enhanced like reference */}
-            <CircularGauge label="REACTOR" value={145} position="right" />
-
-            {/* Full scan radar - Main tactical display */}
-            <FullScanRadar />
-
-            {/* Radar displays */}
-            <RadarDisplay position="left" />
-
-            {/* Mech profile */}
-            <div className="hidden md:block">
-                <MechProfilePanel />
-            </div>
-
-            {/* Side panels */}
-            <div className="hidden md:block">
-                <SidePanel position="left" />
-                <SidePanel position="right" />
-            </div>
-
-            {/* Horizon line */}
-            <HorizonLine />
-
-            {/* Flight data */}
-            <FlightData />
-
-            {/* Compass */}
-            <CompassBar />
-
-            {/* Warning panel */}
-            <WarningPanel mode={mode} />
-
-            {/* Telemetry strip */}
-            <TelemetryStrip />
-
-            {/* Corner frame decorations */}
-            <svg className="absolute top-4 left-4 w-16 h-16 text-cyan-500/40">
-                <path d="M0 40 L0 0 L40 0" stroke="currentColor" strokeWidth="2" fill="none" />
-                <path d="M10 30 L10 10 L30 10" stroke="currentColor" strokeWidth="1" fill="none" />
-            </svg>
-            <svg className="absolute top-4 right-4 w-16 h-16 text-cyan-500/40">
-                <path d="M64 40 L64 0 L24 0" stroke="currentColor" strokeWidth="2" fill="none" />
-                <path d="M54 30 L54 10 L34 10" stroke="currentColor" strokeWidth="1" fill="none" />
-            </svg>
-            <svg className="absolute bottom-4 left-4 w-16 h-16 text-cyan-500/40">
-                <path d="M0 24 L0 64 L40 64" stroke="currentColor" strokeWidth="2" fill="none" />
-                <path d="M10 34 L10 54 L30 54" stroke="currentColor" strokeWidth="1" fill="none" />
-            </svg>
-            <svg className="absolute bottom-4 right-4 w-16 h-16 text-cyan-500/40">
-                <path d="M64 24 L64 64 L24 64" stroke="currentColor" strokeWidth="2" fill="none" />
-                <path d="M54 34 L54 54 L34 54" stroke="currentColor" strokeWidth="1" fill="none" />
-            </svg>
-
-            {/* Scan lines effect */}
-            <div
-                className="absolute inset-0 pointer-events-none opacity-10"
-                style={{
-                    backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(34, 211, 238, 0.03) 2px, rgba(34, 211, 238, 0.03) 4px)'
-                }}
-            />
+                    {/* Scan lines */}
+                    <ScanlineOverlay />
+                </motion.div>
+            )}
         </div>
     );
 }

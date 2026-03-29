@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Target } from 'lucide-react';
+import { Menu, X, Target, Eye, EyeOff } from 'lucide-react';
 import { NAV_ITEMS } from '../../constants';
 import { useLoadingState } from '../../App';
 
@@ -29,31 +29,8 @@ export function Navbar() {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    // Hide nav after idle 5s, show on user interaction
-    useEffect(() => {
-        if (isLoading) return;
-
-        let idleTimer: ReturnType<typeof setTimeout>;
-
-        const resetIdle = () => {
-            setIsHidden(false);
-            clearTimeout(idleTimer);
-            idleTimer = setTimeout(() => {
-                if (!isMobileMenuOpen) {
-                    setIsHidden(true);
-                }
-            }, 5000);
-        };
-
-        resetIdle();
-        const events: (keyof WindowEventMap)[] = ['mousemove', 'scroll', 'keydown', 'touchstart'];
-        events.forEach((event) => window.addEventListener(event, resetIdle, { passive: true }));
-
-        return () => {
-            clearTimeout(idleTimer);
-            events.forEach((event) => window.removeEventListener(event, resetIdle));
-        };
-    }, [isMobileMenuOpen, isLoading]);
+    // Hide nav default on mobile context? No, just keep manual toggle state.
+    // Timer auto-hide logic removed per user request.
 
     // Handle active section detection - throttled
     useEffect(() => {
@@ -100,6 +77,28 @@ export function Navbar() {
 
     return (
         <>
+            {/* Manual Header Toggle Button */}
+            <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                onClick={() => setIsHidden(!isHidden)}
+                className={`fixed top-4 right-4 z-[60] p-2 flex items-center justify-center transition-all bg-gray-950/80 backdrop-blur-md border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 md:hidden ${isHidden ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                title={isHidden ? "Show Header" : "Hide Header"}
+                style={{ clipPath: 'polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px)' }}
+            >
+                {isHidden ? <Eye size={18} /> : <EyeOff size={18} />}
+            </motion.button>
+            <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                onClick={() => setIsHidden(!isHidden)}
+                className={`hidden md:flex fixed top-4 right-4 z-[60] p-2 items-center justify-center transition-all bg-gray-950/80 backdrop-blur-md border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 group ${isHidden ? '' : 'bg-transparent border-transparent text-cyan-400/50 hover:text-cyan-400'}`}
+                title={isHidden ? "Show Header" : "Hide Header"}
+                style={{ clipPath: 'polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px)' }}
+            >
+                {isHidden ? <Eye size={18} /> : <EyeOff size={18} className="rotate-180" />}
+            </motion.button>
+
             <motion.nav
                 initial={{ y: -100, opacity: 0 }}
                 animate={{ y: isHidden ? -120 : 0, opacity: isHidden ? 0 : 1 }}

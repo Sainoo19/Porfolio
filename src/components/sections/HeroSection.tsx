@@ -5,9 +5,9 @@
 
 import { useEffect, useState, useMemo, useCallback, memo } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronDown, Mail, MapPin, FileText, Cpu, Wifi, Shield, Crosshair } from 'lucide-react';
+import { ChevronDown, MapPin, FileText, Cpu, Wifi, Shield, Crosshair } from 'lucide-react';
 import { HeroScene } from '../three/HeroScene';
-import { PilotHUDBackground } from '../three/PilotHUDBackground';
+import { PilotHUDBackground, TacticalRadar, BattleModeButton, CYAN_PALETTE, RED_PALETTE } from '../three/PilotHUDBackground';
 import { TypewriterText } from '../ui';
 import { Button } from '../ui';
 import { PERSONAL_INFO } from '../../constants';
@@ -35,7 +35,7 @@ const letterVariants = {
 };
 
 // Memoized floating particles - generated once
-const FloatingParticles = memo(function FloatingParticles() {
+const FloatingParticles = memo(function FloatingParticles({ isBattle }: { isBattle: boolean }) {
     // Generate particle data once using useMemo
     const particleData = useMemo(() =>
         [...Array(12)].map((_, i) => ({
@@ -48,12 +48,14 @@ const FloatingParticles = memo(function FloatingParticles() {
         })), []
     );
 
+    const particleColor = isBattle ? 'bg-red-500/70' : 'bg-cyan-400/60';
+
     return (
         <>
             {particleData.map((p) => (
                 <motion.div
                     key={p.id}
-                    className="absolute w-1 h-1 bg-cyan-400/60 rounded-full z-15"
+                    className={`absolute w-1 h-1 rounded-full z-15 ${particleColor}`}
                     initial={{ x: p.initialX, y: p.initialY }}
                     animate={{ y: [null, p.animateY], opacity: [0, 1, 0] }}
                     transition={{ duration: p.duration, repeat: Infinity, delay: p.delay }}
@@ -68,6 +70,18 @@ const FloatingParticles = memo(function FloatingParticles() {
  */
 export function HeroSection() {
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+    const [isBattle, setIsBattle] = useState(false);
+
+    const palette = isBattle ? RED_PALETTE : CYAN_PALETTE;
+
+    const handleBattleToggle = useCallback(() => {
+        setIsBattle(prev => {
+            const next = !prev;
+            // gundamAudio.playBattleToggle(next); // Removed per user request
+            // gundamAudio.playAlarm(next); // Removed per user request
+            return next;
+        });
+    }, []);
 
     // Throttled mouse move handler
     useEffect(() => {
@@ -109,13 +123,18 @@ export function HeroSection() {
             <HeroScene className="z-0 opacity-55" />
 
             {/* Pilot Helmet HUD Background */}
-            <PilotHUDBackground className="z-5" />
+            <PilotHUDBackground className="z-5" isBattle={isBattle} />
 
             {/* Animated gradient background - Cyberpunk style */}
             <motion.div
-                className="absolute inset-0 z-5"
+                className="absolute inset-0 z-5 transition-colors duration-700"
                 animate={{
-                    background: [
+                    background: isBattle ? [
+                        'radial-gradient(circle at 20% 50%, rgba(255, 50, 50, 0.15) 0%, transparent 50%)',
+                        'radial-gradient(circle at 80% 50%, rgba(255, 100, 30, 0.1) 0%, transparent 50%)',
+                        'radial-gradient(circle at 50% 80%, rgba(255, 50, 50, 0.15) 0%, transparent 50%)',
+                        'radial-gradient(circle at 20% 50%, rgba(255, 50, 50, 0.15) 0%, transparent 50%)',
+                    ] : [
                         'radial-gradient(circle at 20% 50%, rgba(34, 211, 238, 0.1) 0%, transparent 50%)',
                         'radial-gradient(circle at 80% 50%, rgba(217, 70, 239, 0.1) 0%, transparent 50%)',
                         'radial-gradient(circle at 50% 80%, rgba(34, 211, 238, 0.1) 0%, transparent 50%)',
@@ -126,15 +145,36 @@ export function HeroSection() {
             />
 
             {/* HUD Grid background */}
-            <div className="absolute inset-0 z-5 opacity-20">
-                <div className="w-full h-full bg-hud-grid" />
+            <div className={`absolute inset-0 z-5 opacity-20 transition-colors duration-700 ${isBattle ? 'opacity-30' : ''}`}>
+                <div className="w-full h-full bg-hud-grid" style={{ filter: isBattle ? 'hue-rotate(-120deg) brightness(1.5)' : undefined }} />
             </div>
 
             {/* Gradient overlays */}
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-gray-950/50 to-gray-950 z-10 pointer-events-none" />
 
             {/* Floating particles - Memoized component */}
-            <FloatingParticles />
+            <FloatingParticles isBattle={isBattle} />
+
+            {/* Context injected styles for battle glitch/shake */}
+            <style>{`
+                @keyframes hero-glitch {
+                    0% { transform: translate(0) }
+                    20% { transform: translate(-2px, 2px) }
+                    40% { transform: translate(-2px, -2px) }
+                    60% { transform: translate(2px, 2px) }
+                    80% { transform: translate(2px, -2px) }
+                    100% { transform: translate(0) }
+                }
+                .hero-battle-shake {
+                    animation: hero-glitch 0.2s cubic-bezier(.25,.46,.45,.94) both infinite;
+                    animation-duration: 0.15s;
+                }
+            `}</style>
+
+            {/* Tactical Radar - Lifted above the dark gradients */}
+            <div className="z-20 pointer-events-none">
+                <TacticalRadar palette={palette} />
+            </div>
 
             {/* Content with parallax */}
             <motion.div
@@ -145,28 +185,28 @@ export function HeroSection() {
                     x: mousePosition.x * 0.5,
                     y: mousePosition.y * 0.5,
                 }}
-                className="relative z-20 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center"
+                className={`relative z-20 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center transition-all duration-300 ${isBattle ? 'hero-battle-shake drop-shadow-[0_0_15px_rgba(255,50,50,0.4)]' : ''}`}
             >
                 {/* Location badge - HUD Style */}
                 <motion.div variants={FADE_IN_VARIANTS} className="mb-6">
                     <motion.span
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-500/5 backdrop-blur-md border border-cyan-500/30 text-cyan-400 text-sm font-mono uppercase tracking-wider"
+                        className={`inline-flex items-center gap-2 px-4 py-2 backdrop-blur-md border text-sm font-mono uppercase tracking-wider transition-colors duration-500 ${isBattle ? 'bg-red-500/10 border-red-500/50 text-red-500' : 'bg-cyan-500/5 border-cyan-500/30 text-cyan-400'}`}
                         style={{
                             clipPath: 'polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)'
                         }}
                         whileHover={{
                             scale: 1.05,
-                            boxShadow: '0 0 30px rgba(34, 211, 238, 0.3)',
-                            borderColor: 'rgba(34, 211, 238, 0.6)',
+                            boxShadow: isBattle ? '0 0 30px rgba(255, 50, 50, 0.4)' : '0 0 30px rgba(34, 211, 238, 0.3)',
+                            borderColor: isBattle ? 'rgba(255, 50, 50, 0.8)' : 'rgba(34, 211, 238, 0.6)',
                         }}
                     >
                         <motion.span
                             animate={{ scale: [1, 1.2, 1] }}
                             transition={{ duration: 2, repeat: Infinity }}
                         >
-                            <MapPin size={16} className="text-magenta-400" />
+                            <MapPin size={16} className={isBattle ? "text-orange-500" : "text-magenta-400"} />
                         </motion.span>
-                        <span className="text-cyan-500/50">[LOC]</span> {PERSONAL_INFO.location}
+                        <span className={isBattle ? "text-red-500/60" : "text-cyan-500/50"}>[LOC]</span> {PERSONAL_INFO.location}
                     </motion.span>
                 </motion.div>
 
@@ -175,9 +215,11 @@ export function HeroSection() {
                     variants={FADE_IN_VARIANTS}
                     className="mb-4 flex items-center justify-center gap-4"
                 >
-                    <div className="h-px w-16 bg-gradient-to-r from-transparent to-cyan-500" />
-                    <span className="text-xs font-mono text-cyan-400/60 tracking-widest">PILOT_ID: NVT-001</span>
-                    <div className="h-px w-16 bg-gradient-to-l from-transparent to-cyan-500" />
+                    <div className={`h-px w-16 bg-gradient-to-r from-transparent ${isBattle ? 'to-red-500' : 'to-cyan-500'}`} />
+                    <span className={`text-xs font-mono tracking-widest ${isBattle ? 'text-red-500' : 'text-cyan-400/60'}`}>
+                        {isBattle ? 'THREAT LEVEL: CRITICAL' : 'PILOT_ID: NVT-001'}
+                    </span>
+                    <div className={`h-px w-16 bg-gradient-to-l from-transparent ${isBattle ? 'to-red-500' : 'to-cyan-500'}`} />
                 </motion.div>
 
                 {/* Animated Name with letter-by-letter reveal - HUD Style */}
@@ -202,7 +244,7 @@ export function HeroSection() {
                         ))}
                     </span>
 
-                    {/* Name with glow effect - Cyan/Magenta gradient */}
+                    {/* Name with glow effect - Dynamic gradient based on mode */}
                     <motion.span
                         className="inline-block pb-2"
                         initial={{ opacity: 0, y: 50 }}
@@ -215,10 +257,10 @@ export function HeroSection() {
                         style={{ lineHeight: 1.2 }}
                     >
                         <span
-                            className="bg-gradient-to-r from-cyan-400 via-magenta-400 to-cyan-400 bg-clip-text text-transparent"
+                            className={`bg-clip-text text-transparent bg-gradient-to-r transition-colors duration-500 ${isBattle ? 'from-red-500 via-orange-500 to-red-500' : 'from-cyan-400 via-magenta-400 to-cyan-400'}`}
                             style={{
-                                textShadow: '0 0 40px rgba(34, 211, 238, 0.5)',
-                                filter: 'drop-shadow(0 0 20px rgba(34, 211, 238, 0.3))'
+                                textShadow: isBattle ? '0 0 40px rgba(255, 50, 50, 0.6)' : '0 0 40px rgba(34, 211, 238, 0.5)',
+                                filter: isBattle ? 'drop-shadow(0 0 20px rgba(255, 50, 50, 0.4))' : 'drop-shadow(0 0 20px rgba(34, 211, 238, 0.3))'
                             }}
                         >
                             {name}
@@ -226,60 +268,60 @@ export function HeroSection() {
                     </motion.span>
                 </motion.h1>
 
-                {/* Role with enhanced typewriter effect - HUD Style */}
+                {/* Role with enhanced typewriter effect - Dynamic Mode */}
                 <motion.div variants={SLIDE_UP_VARIANTS} className="mb-6">
-                    <h2 className="text-2xl sm:text-3xl md:text-4xl text-gray-300 font-light flex items-center justify-center gap-3 font-['Rajdhani']">
-                        <span className="text-cyan-500/50">&lt;</span>
-                        <span>I'm a</span>
+                    <h2 className={`text-2xl sm:text-3xl md:text-4xl font-light flex items-center justify-center gap-3 font-['Rajdhani'] ${isBattle ? 'text-red-200' : 'text-gray-300'}`}>
+                        <span className={isBattle ? "text-red-500/80" : "text-cyan-500/50"}>&lt;</span>
+                        <span>{isBattle ? "WARNING:" : "I'm a"}</span>
                         <motion.span
-                            className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-magenta-400 font-['Orbitron']"
+                            className={`font-bold text-transparent bg-clip-text bg-gradient-to-r font-['Orbitron'] ${isBattle ? 'from-red-500 to-orange-500' : 'from-cyan-400 to-magenta-400'}`}
                             animate={{
                                 backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
                             }}
                             transition={{ duration: 5, repeat: Infinity }}
                             style={{ backgroundSize: '200% 200%' }}
                         >
-                            <TypewriterText words={ROLES} />
+                            <TypewriterText words={isBattle ? ['SYSTEM_COMPROMISED', 'WEAPONS_ONLINE', 'DESTROY_MODE'] : ROLES} />
                         </motion.span>
-                        <span className="text-cyan-500/50">/&gt;</span>
+                        <span className={isBattle ? "text-red-500/80" : "text-cyan-500/50"}>/&gt;</span>
                     </h2>
                 </motion.div>
 
-                {/* Summary with animated highlight - HUD Style */}
+                {/* Summary with animated highlight */}
                 <motion.p
                     variants={SLIDE_UP_VARIANTS}
-                    className="text-gray-400 text-base md:text-lg max-w-3xl mx-auto mb-8 leading-relaxed font-['Rajdhani']"
+                    className={`text-base md:text-lg max-w-3xl mx-auto mb-8 leading-relaxed font-['Rajdhani'] transition-colors ${isBattle ? 'text-red-300/80' : 'text-gray-400'}`}
                 >
-                    Bridging technical expertise with project management skills to deliver
+                    {isBattle ? "Target acquired. All weapon systems synchronized. Engaging " : "Bridging technical expertise with project management skills to deliver "}
                     <motion.span
                         className="relative inline-block mx-2"
                         whileHover={{ scale: 1.05 }}
                     >
-                        <span className="relative z-10 text-cyan-400 font-semibold">exceptional results</span>
+                        <span className={`relative z-10 font-semibold ${isBattle ? 'text-red-400' : 'text-cyan-400'}`}>{isBattle ? 'maximum damage' : 'exceptional results'}</span>
                         <motion.span
-                            className="absolute inset-0 bg-cyan-500/10 border border-cyan-500/30 -z-0"
+                            className={`absolute inset-0 border -z-0 ${isBattle ? 'bg-red-500/20 border-red-500/50' : 'bg-cyan-500/10 border-cyan-500/30'}`}
                             initial={{ scaleX: 0 }}
                             animate={{ scaleX: 1 }}
                             transition={{ delay: 1.5, duration: 0.5 }}
                             style={{ originX: 0 }}
                         />
                     </motion.span>
-                    . Passionate about clean code and efficient workflows.
+                    {isBattle ? ". Commencing attack pattern." : ". Passionate about clean code and efficient workflows."}
                 </motion.p>
 
-                {/* Status indicators - Mecha style */}
+                {/* Status indicators - Responsive to battle mode */}
                 <motion.div
                     variants={FADE_IN_VARIANTS}
                     className="flex items-center justify-center gap-6 mb-8 text-xs font-mono"
                 >
                     {[
-                        { icon: Cpu, label: 'SYS', status: 'READY', color: 'text-green-400' },
-                        { icon: Wifi, label: 'NET', status: 'ONLINE', color: 'text-cyan-400' },
-                        { icon: Shield, label: 'DEF', status: 'ACTIVE', color: 'text-magenta-400' },
+                        { icon: Cpu, label: 'SYS', status: isBattle ? 'OVERRIDE' : 'READY', color: isBattle ? 'text-orange-500' : 'text-green-400' },
+                        { icon: Wifi, label: 'NET', status: isBattle ? 'INTERCEPT' : 'ONLINE', color: isBattle ? 'text-red-500' : 'text-cyan-400' },
+                        { icon: Shield, label: 'DEF', status: isBattle ? 'COMPROMISED' : 'ACTIVE', color: isBattle ? 'text-red-600 animate-pulse' : 'text-magenta-400' },
                     ].map(({ icon: Icon, label, status, color }) => (
                         <motion.div
                             key={label}
-                            className="flex items-center gap-2 text-gray-500"
+                            className={`flex items-center gap-2 ${isBattle ? 'text-red-800' : 'text-gray-500'}`}
                             whileHover={{ scale: 1.1 }}
                         >
                             <Icon size={14} className={color} />
@@ -301,12 +343,12 @@ export function HeroSection() {
                         <Button
                             variant="primary"
                             size="md"
-                            className="text-base px-6 py-2.5 relative overflow-hidden group font-['Orbitron'] uppercase tracking-wider"
+                            className={`text-base px-6 py-2.5 relative overflow-hidden group font-['Orbitron'] uppercase tracking-wider ${isBattle ? '!bg-red-600 hover:!bg-red-500 !border-red-500 !text-white' : ''}`}
                             onClick={() => document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' })}
                         >
                             <span className="relative z-10 flex items-center gap-2">
                                 <Crosshair size={18} className="group-hover:animate-pulse" />
-                                View My Work
+                                {isBattle ? 'ENGAGE TARGET' : 'View My Work'}
                             </span>
                         </Button>
                     </motion.div>
@@ -317,10 +359,10 @@ export function HeroSection() {
                         <Button
                             variant="secondary"
                             size="md"
-                            className="text-base px-6 py-2.5 font-['Orbitron'] uppercase tracking-wider"
+                            className={`text-base px-6 py-2.5 font-['Orbitron'] uppercase tracking-wider ${isBattle ? '!border-orange-500 !text-orange-500 hover:!bg-orange-500/20' : ''}`}
                             onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
                         >
-                            Get In Touch
+                            {isBattle ? 'INITIALIZE STRIKE' : 'Get In Touch'}
                         </Button>
                     </motion.div>
                     <motion.div
@@ -331,43 +373,25 @@ export function HeroSection() {
                             href="/resume.pdf"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 text-sm px-6 py-3 bg-transparent border border-cyan-500/50 hover:bg-cyan-500/10 text-cyan-400 font-['Orbitron'] uppercase tracking-wider transition-all duration-300"
+                            className={`inline-flex items-center gap-2 text-sm px-6 py-3 bg-transparent border font-['Orbitron'] uppercase tracking-wider transition-all duration-300 ${isBattle ? 'border-red-500/50 hover:bg-red-500/20 text-red-500' : 'border-cyan-500/50 hover:bg-cyan-500/10 text-cyan-400'}`}
                             style={{
                                 clipPath: 'polygon(0 0, 100% 0, 100% 70%, 90% 100%, 0 100%)'
                             }}
                         >
                             <FileText size={18} />
-                            View My CV
+                            {isBattle ? 'THREAT DATA' : 'View My CV'}
                         </a>
                     </motion.div>
                 </motion.div>
 
-                {/* Social Links - HUD Style */}
-                <motion.div variants={FADE_IN_VARIANTS} className="flex items-center justify-center gap-4">
-                    {[
-                        //{ icon: Github, href: 'https://github.com/Sainoo19', label: 'GitHub', color: 'hover:text-cyan-400 hover:border-cyan-500/60' },
-                        //{ icon: Linkedin, href: 'https://linkedin.com/in/nvtrung19', label: 'LinkedIn', color: 'hover:text-cyan-400 hover:border-cyan-500/60' },
-                        { icon: Mail, href: 'mailto:nvtrung19.work@gmail.com', label: 'Email', color: 'hover:text-magenta-400 hover:border-magenta-500/60' },
-                    ].map(({ icon: Icon, href, label, color }) => (
-                        <motion.a
-                            key={label}
-                            href={href}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            whileHover={{
-                                scale: 1.1,
-                                y: -3,
-                            }}
-                            whileTap={{ scale: 0.9 }}
-                            className={`p-3 bg-gray-900/50 backdrop-blur-md border border-cyan-500/30 text-gray-400 ${color} transition-all`}
-                            style={{
-                                clipPath: 'polygon(0 8px, 8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%)'
-                            }}
-                            aria-label={label}
-                        >
-                            <Icon size={20} />
-                        </motion.a>
-                    ))}
+                {/* Battle Mode Button - Replaces Social Links to be centered */}
+                <motion.div variants={FADE_IN_VARIANTS} className="flex items-center justify-center mt-2">
+                    <BattleModeButton 
+                        isBattle={isBattle} 
+                        onToggle={handleBattleToggle} 
+                        palette={palette} 
+                        className="!px-8 !py-3 !text-sm"
+                    />
                 </motion.div>
             </motion.div>
 

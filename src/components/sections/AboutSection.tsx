@@ -45,10 +45,12 @@ const HIGHLIGHTS = [
     },
 ];
 
+import { memo } from 'react';
+
 /**
  * About section with pilot profile
  */
-export function AboutSection() {
+export const AboutSection = memo(function AboutSection() {
     return (
         <section id="about" className="relative py-16 md:py-20 overflow-hidden">
             {/* HUD Grid Background */}
@@ -219,4 +221,4 @@ export function AboutSection() {
             </div>
         </section>
     );
-}
+});

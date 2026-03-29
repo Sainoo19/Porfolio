@@ -558,7 +558,7 @@ function CentralTargetingOptic({ palette: p }: { palette: HUDPalette }) {
    TACTICAL RADAR (bottom-left)
    ================================================================ */
 
-export function TacticalRadar({ palette: p }: { palette: HUDPalette }) {
+export const TacticalRadar = memo(function TacticalRadar({ palette: p }: { palette: HUDPalette }) {
     const [blips, setBlips] = useState<{ x: number; y: number; id: number }[]>([]);
 
     useEffect(() => {
@@ -628,7 +628,7 @@ export function TacticalRadar({ palette: p }: { palette: HUDPalette }) {
             </svg>
         </motion.div>
     );
-}
+});
 
 /* ================================================================
    STATUS BAR + SIDE PANELS
@@ -1094,7 +1094,7 @@ const HUDStyles = memo(function HUDStyles() {
    MAIN COMPONENT
    ================================================================ */
 
-export function PilotHUDBackground({ className = '', isBattle }: PilotHUDBackgroundProps) {
+export const PilotHUDBackground = memo(function PilotHUDBackground({ className = '', isBattle }: PilotHUDBackgroundProps) {
     const [booted, setBooted] = useState(false);
 
     const palette = isBattle ? RED_PALETTE : CYAN_PALETTE;
@@ -1162,4 +1162,4 @@ export function PilotHUDBackground({ className = '', isBattle }: PilotHUDBackgro
             )}
         </div>
     );
-}
+});

@@ -3,7 +3,7 @@
  * @description Lists skills as pilot capability modules in HUD style
  */
 
-import { useRef, useState } from 'react';
+import { useRef, useState, memo } from 'react';
 import { motion } from 'framer-motion';
 import { SectionTitle } from '../ui';
 import { SKILLS } from '../../constants';
@@ -68,7 +68,7 @@ interface SkillCardProps {
 }
 
 // 3D card for each skill - Mecha Module style
-function SkillCard3D({ skill, index }: SkillCardProps) {
+const SkillCard3D = memo(function SkillCard3D({ skill, index }: SkillCardProps) {
     const cardRef = useRef<HTMLDivElement>(null);
     const [rotateX, setRotateX] = useState(0);
     const [rotateY, setRotateY] = useState(0);
@@ -192,12 +192,12 @@ function SkillCard3D({ skill, index }: SkillCardProps) {
             </div>
         </motion.div>
     );
-}
+});
 
 /**
  * Skills section - Pilot Capability Module Registry
  */
-export function SkillsSection() {
+export const SkillsSection = memo(function SkillsSection() {
     const [activeCategory, setActiveCategory] = useState<SkillCategory | 'all'>('all');
 
     const filteredSkills = activeCategory === 'all'
@@ -294,4 +294,4 @@ export function SkillsSection() {
             </div>
         </section>
     );
-}
+});

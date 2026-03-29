@@ -3,7 +3,7 @@
  * @description Contact form as comm terminal with HUD styling
  */
 
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { motion } from 'framer-motion';
 import { Send, Mail, Phone, MapPin, Github, Linkedin, CheckCircle, Loader2, Radio, Signal } from 'lucide-react';
 import { SectionTitle, Button, GlassCard } from '../ui';
@@ -62,7 +62,7 @@ const SOCIAL_LINKS = [
 /**
  * Contact section - Communication Terminal
  */
-export function ContactSection() {
+export const ContactSection = memo(function ContactSection() {
     const [formData, setFormData] = useState<FormData>({
         name: '',
         email: '',
@@ -344,4 +344,4 @@ export function ContactSection() {
             </div>
         </section>
     );
-}
+});

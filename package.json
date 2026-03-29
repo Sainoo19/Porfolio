@@ -19,11 +19,8 @@
     "vite": "^6.0.1"
   },
   "dependencies": {
-    "@react-three/drei": "^10.7.7",
-    "@react-three/fiber": "^9.4.2",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
-    "@types/three": "^0.182.0",
     "autoprefixer": "^10.4.22",
     "framer-motion": "^12.23.26",
     "lucide-react": "^0.560.0",
@@ -31,7 +28,6 @@
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-router-dom": "^7.10.1",
-    "tailwindcss": "^4.1.18",
-    "three": "^0.182.0"
+    "tailwindcss": "^4.1.18"
   }
 }

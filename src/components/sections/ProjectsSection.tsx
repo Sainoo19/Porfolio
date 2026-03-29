@@ -3,7 +3,7 @@
  * @description Project showcase as deployed mecha systems with HUD styling
  */
 
-import { useState, useRef } from 'react';
+import { useState, useRef, memo } from 'react';
 import { motion } from 'framer-motion';
 import { ExternalLink, Github, Users, Calendar, Folder, Cpu } from 'lucide-react';
 import { SectionTitle, TechBadge, Button } from '../ui';
@@ -27,7 +27,7 @@ function flattenTechCategory(category: TechCategory): string[] {
 /**
  * Individual project card - Deployed System Panel with HUD style
  */
-function ProjectCard({ project, index }: ProjectCardProps) {
+const ProjectCard = memo(function ProjectCard({ project, index }: ProjectCardProps) {
     const [isHovered, setIsHovered] = useState(false);
     const cardRef = useRef<HTMLDivElement>(null);
     const [rotateX, setRotateX] = useState(0);
@@ -290,12 +290,12 @@ function ProjectCard({ project, index }: ProjectCardProps) {
             )}
         </motion.div>
     );
-}
+});
 
 /**
  * Projects section - Deployed Systems Registry
  */
-export function ProjectsSection() {
+export const ProjectsSection = memo(function ProjectsSection() {
     const [showAll, setShowAll] = useState(false);
     const displayedProjects = showAll ? PROJECTS : PROJECTS.slice(0, 3);
 
@@ -389,4 +389,4 @@ export function ProjectsSection() {
             </div>
         </section>
     );
-}
+});

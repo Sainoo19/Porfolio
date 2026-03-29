@@ -3,8 +3,8 @@
  * @description Floating button to scroll back to top with HUD styling
  */
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState } from 'react';
+import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
 import { ArrowUp } from 'lucide-react';
 
 /**
@@ -13,19 +13,13 @@ import { ArrowUp } from 'lucide-react';
 export function ScrollToTop() {
     const [isVisible, setIsVisible] = useState(false);
 
-    useEffect(() => {
-        const toggleVisibility = () => {
-            // Show button when page is scrolled down 400px
-            if (window.scrollY > 400) {
-                setIsVisible(true);
-            } else {
-                setIsVisible(false);
-            }
-        };
+    const { scrollY } = useScroll();
 
-        window.addEventListener('scroll', toggleVisibility, { passive: true });
-        return () => window.removeEventListener('scroll', toggleVisibility);
-    }, []);
+    useMotionValueEvent(scrollY, "change", (latest) => {
+        if (latest > 400 !== isVisible) {
+            setIsVisible(latest > 400);
+        }
+    });
 
     const scrollToTop = () => {
         window.scrollTo({

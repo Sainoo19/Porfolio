@@ -3,7 +3,7 @@
  * @description Work experience as pilot mission history with HUD styling
  */
 
-import { useState, useRef } from 'react';
+import { useState, useRef, memo } from 'react';
 import { motion } from 'framer-motion';
 import { SectionTitle, Timeline } from '../ui';
 import { EXPERIENCES } from '../../constants';
@@ -12,7 +12,7 @@ import { SLIDE_UP_VARIANTS } from '../../constants';
 /**
  * 3D Stat Card Component - HUD Data Panel
  */
-function StatCard({ stat, index }: { stat: { value: string; label: string; code: string }; index: number }) {
+const StatCard = memo(function StatCard({ stat, index }: { stat: { value: string; label: string; code: string }; index: number }) {
     const cardRef = useRef<HTMLDivElement>(null);
     const [rotateX, setRotateX] = useState(0);
     const [rotateY, setRotateY] = useState(0);
@@ -122,12 +122,12 @@ function StatCard({ stat, index }: { stat: { value: string; label: string; code:
             />
         </motion.div>
     );
-}
+});
 
 /**
  * Experience section - Pilot Mission Log
  */
-export function ExperienceSection() {
+export const ExperienceSection = memo(function ExperienceSection() {
     const timelineItems = EXPERIENCES.map((exp) => ({
         id: exp.id,
         date: `${exp.startDate} - ${exp.endDate}`,
@@ -231,4 +231,4 @@ export function ExperienceSection() {
             </div>
         </section>
     );
-}
+});

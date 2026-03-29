@@ -3,8 +3,8 @@
  * @description Cyberpunk pilot helmet HUD navigation
  */
 
-import { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useCallback } from 'react';
+import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
 import { Menu, X, Target, Eye, EyeOff } from 'lucide-react';
 import { NAV_ITEMS } from '../../constants';
 import { useLoadingState } from '../../App';
@@ -19,47 +19,28 @@ export function Navbar() {
     const [activeSection, setActiveSection] = useState('home');
     const [isHidden, setIsHidden] = useState(false);
 
-    // Handle scroll effect - memoized handler
-    useEffect(() => {
-        const handleScroll = () => {
-            setIsScrolled(window.scrollY > 50);
-        };
+    const { scrollY } = useScroll();
 
-        window.addEventListener('scroll', handleScroll, { passive: true });
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
+    useMotionValueEvent(scrollY, "change", (latest) => {
+        if (latest > 50 !== isScrolled) {
+            setIsScrolled(latest > 50);
+        }
 
-    // Hide nav default on mobile context? No, just keep manual toggle state.
-    // Timer auto-hide logic removed per user request.
-
-    // Handle active section detection - throttled
-    useEffect(() => {
-        let ticking = false;
-
-        const handleScroll = () => {
-            if (!ticking) {
-                ticking = true;
-                requestAnimationFrame(() => {
-                    const sections = NAV_ITEMS.map((item) => item.href.replace('#', ''));
-
-                    for (const section of sections) {
-                        const element = document.getElementById(section);
-                        if (element) {
-                            const rect = element.getBoundingClientRect();
-                            if (rect.top <= 100 && rect.bottom >= 100) {
-                                setActiveSection(section);
-                                break;
-                            }
-                        }
+        // Active section detection
+        const sections = NAV_ITEMS.map((item) => item.href.replace('#', ''));
+        for (const section of sections) {
+            const element = document.getElementById(section);
+            if (element) {
+                const rect = element.getBoundingClientRect();
+                if (rect.top <= 100 && rect.bottom >= 100) {
+                    if (activeSection !== section) {
+                        setActiveSection(section);
                     }
-                    ticking = false;
-                });
+                    break;
+                }
             }
-        };
-
-        window.addEventListener('scroll', handleScroll, { passive: true });
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
+        }
+    });
 
     // Memoized nav click handler
     const handleNavClick = useCallback((href: string) => {

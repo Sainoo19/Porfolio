@@ -4,9 +4,8 @@
  */
 
 import { useEffect, useState, useMemo, useCallback, memo } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useMotionValue, useSpring } from 'framer-motion';
 import { ChevronDown, MapPin, FileText, Cpu, Wifi, Shield, Crosshair } from 'lucide-react';
-import { HeroScene } from '../three/HeroScene';
 import { PilotHUDBackground, TacticalRadar, BattleModeButton, CYAN_PALETTE, RED_PALETTE } from '../three/PilotHUDBackground';
 import { TypewriterText } from '../ui';
 import { Button } from '../ui';
@@ -69,7 +68,12 @@ const FloatingParticles = memo(function FloatingParticles({ isBattle }: { isBatt
  * Hero section with 3D scene and animated content
  */
 export function HeroSection() {
-    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+    // Optimized parallax using Framer Motion values (bypasses React renders during mouse move)
+    const mouseX = useMotionValue(0);
+    const mouseY = useMotionValue(0);
+    const springConfig = { damping: 25, stiffness: 200, mass: 0.5 };
+    const parallaxX = useSpring(mouseX, springConfig);
+    const parallaxY = useSpring(mouseY, springConfig);
     const [isBattle, setIsBattle] = useState(false);
 
     const palette = isBattle ? RED_PALETTE : CYAN_PALETTE;
@@ -83,26 +87,20 @@ export function HeroSection() {
         });
     }, []);
 
-    // Throttled mouse move handler
+    // Hardware-accelerated mouse move handler
     useEffect(() => {
-        let ticking = false;
-
         const handleMouseMove = (e: MouseEvent) => {
-            if (!ticking) {
-                requestAnimationFrame(() => {
-                    const { clientX, clientY } = e;
-                    const x = (clientX / window.innerWidth - 0.5) * 20;
-                    const y = (clientY / window.innerHeight - 0.5) * 20;
-                    setMousePosition({ x, y });
-                    ticking = false;
-                });
-                ticking = true;
-            }
+            const { clientX, clientY } = e;
+            const x = (clientX / window.innerWidth - 0.5) * 20;
+            const y = (clientY / window.innerHeight - 0.5) * 20;
+            // Update motion values directly -> completely bypasses React render tree update!
+            mouseX.set(x * 0.5);
+            mouseY.set(y * 0.5);
         };
 
         window.addEventListener('mousemove', handleMouseMove, { passive: true });
         return () => window.removeEventListener('mousemove', handleMouseMove);
-    }, []);
+    }, [mouseX, mouseY]);
 
     const handleScrollDown = useCallback(() => {
         const aboutSection = document.getElementById('about');
@@ -119,8 +117,11 @@ export function HeroSection() {
             id="home"
             className="relative min-h-screen flex items-center justify-center overflow-hidden"
         >
-            {/* Helmet-view depth scene */}
-            <HeroScene className="z-0 opacity-55" />
+            {/* Space background container */}
+            <div className="absolute inset-0 bg-black/90 z-0">
+                {/* Fallback ambient grid if PilotHUD is ever transparent */}
+                <div className="absolute inset-0 bg-hud-grid opacity-30" />
+            </div>
 
             {/* Pilot Helmet HUD Background */}
             <PilotHUDBackground className="z-5" isBattle={isBattle} />
@@ -182,8 +183,8 @@ export function HeroSection() {
                 initial="hidden"
                 animate="visible"
                 style={{
-                    x: mousePosition.x * 0.5,
-                    y: mousePosition.y * 0.5,
+                    x: parallaxX,
+                    y: parallaxY,
                 }}
                 className={`relative z-20 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center transition-all duration-300 ${isBattle ? 'hero-battle-shake drop-shadow-[0_0_15px_rgba(255,50,50,0.4)]' : ''}`}
             >

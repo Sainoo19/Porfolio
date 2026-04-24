@@ -81,8 +81,6 @@ export function HeroSection() {
     const handleBattleToggle = useCallback(() => {
         setIsBattle(prev => {
             const next = !prev;
-            // gundamAudio.playBattleToggle(next); // Removed per user request
-            // gundamAudio.playAlarm(next); // Removed per user request
             return next;
         });
     }, []);
@@ -387,10 +385,10 @@ export function HeroSection() {
 
                 {/* Battle Mode Button - Replaces Social Links to be centered */}
                 <motion.div variants={FADE_IN_VARIANTS} className="flex items-center justify-center mt-2">
-                    <BattleModeButton 
-                        isBattle={isBattle} 
-                        onToggle={handleBattleToggle} 
-                        palette={palette} 
+                    <BattleModeButton
+                        isBattle={isBattle}
+                        onToggle={handleBattleToggle}
+                        palette={palette}
                         className="!px-8 !py-3 !text-sm"
                     />
                 </motion.div>

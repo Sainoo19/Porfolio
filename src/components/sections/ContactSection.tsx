@@ -50,7 +50,7 @@ const SOCIAL_LINKS = [
     {
         icon: Linkedin,
         label: 'LNK',
-        href: 'https://linkedin.com/in/nvtrung19',
+        href: 'https://www.linkedin.com/in/sainoo19/',
     },
     {
         icon: Mail,

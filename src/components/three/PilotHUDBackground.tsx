@@ -68,108 +68,8 @@ export const RED_PALETTE: HUDPalette = {
 };
 
 /* ================================================================
-   WEB AUDIO — SYNTHESISED GUNDAM BOOT SOUNDS
+   WEB AUDIO — SOUND DISABLED PER USER REQUEST
    ================================================================ */
-
-class GundamAudio {
-    private ctx: AudioContext | null = null;
-
-    private getCtx(): AudioContext {
-        if (!this.ctx) this.ctx = new AudioContext();
-        return this.ctx;
-    }
-
-    /** Low power-up hum that rises in pitch */
-    playPowerUp() {
-        try {
-            const ctx = this.getCtx();
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(60, ctx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(220, ctx.currentTime + 1.8);
-            gain.gain.setValueAtTime(0, ctx.currentTime);
-            gain.gain.linearRampToValueAtTime(0.12, ctx.currentTime + 0.3);
-            gain.gain.linearRampToValueAtTime(0.08, ctx.currentTime + 1.5);
-            gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 2.2);
-            osc.connect(gain).connect(ctx.destination);
-            osc.start(ctx.currentTime);
-            osc.stop(ctx.currentTime + 2.2);
-        } catch { /* silent fail */ }
-    }
-
-    /** Short digital beep for each system coming online */
-    playBeep(delayMs = 0, freq = 880) {
-        try {
-            const ctx = this.getCtx();
-            const t = ctx.currentTime + delayMs / 1000;
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.type = 'square';
-            osc.frequency.setValueAtTime(freq, t);
-            gain.gain.setValueAtTime(0, t);
-            gain.gain.linearRampToValueAtTime(0.07, t + 0.02);
-            gain.gain.linearRampToValueAtTime(0, t + 0.12);
-            osc.connect(gain).connect(ctx.destination);
-            osc.start(t);
-            osc.stop(t + 0.15);
-        } catch { /* silent fail */ }
-    }
-
-    /** Confirmation chime — two-tone ascending */
-    playOnlineChime(delayMs = 0) {
-        this.playBeep(delayMs, 660);
-        this.playBeep(delayMs + 120, 990);
-    }
-
-    /** Battle mode activation — descending aggressive tone */
-    playBattleToggle(isBattle: boolean) {
-        try {
-            const ctx = this.getCtx();
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.type = isBattle ? 'sawtooth' : 'square';
-            osc.frequency.setValueAtTime(isBattle ? 440 : 880, ctx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(isBattle ? 880 : 440, ctx.currentTime + 0.25);
-            gain.gain.setValueAtTime(0.1, ctx.currentTime);
-            gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.35);
-            osc.connect(gain).connect(ctx.destination);
-            osc.start(ctx.currentTime);
-            osc.stop(ctx.currentTime + 0.4);
-        } catch { /* silent fail */ }
-    }
-
-    private alarmInterval: any = null;
-
-    /** Intense repeating alarm for battle mode */
-    playAlarm(active: boolean) {
-        try {
-            const ctx = this.getCtx();
-            if (active) {
-                if (this.alarmInterval) return;
-                this.alarmInterval = setInterval(() => {
-                    const osc = ctx.createOscillator();
-                    const gain = ctx.createGain();
-                    osc.type = 'sawtooth';
-                    osc.frequency.setValueAtTime(800, ctx.currentTime);
-                    osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.6);
-                    gain.gain.setValueAtTime(0.15, ctx.currentTime);
-                    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.6);
-                    osc.connect(gain).connect(ctx.destination);
-                    osc.start(ctx.currentTime);
-                    osc.stop(ctx.currentTime + 0.6);
-                }, 800);
-            } else {
-                if (this.alarmInterval) {
-                    clearInterval(this.alarmInterval);
-                    this.alarmInterval = null;
-                }
-            }
-        } catch { /* silent fail */ }
-    }
-}
-
-export const gundamAudio = new GundamAudio();
 
 /* ================================================================
    BOOT SEQUENCE
@@ -205,7 +105,6 @@ function BootSequence({ onComplete, palette }: { onComplete: () => void; palette
         // Play power-up hum once on mount
         if (!hasPlayedRef.current) {
             hasPlayedRef.current = true;
-            // gundamAudio.playPowerUp(); // User requested to disable this
         }
 
         // Reveal lines one by one
@@ -213,9 +112,6 @@ function BootSequence({ onComplete, palette }: { onComplete: () => void; palette
         BOOT_LINES.forEach((line, i) => {
             timers.push(setTimeout(() => {
                 setVisibleLines(i + 1);
-                if (line.type === 'ok') gundamAudio.playBeep(0, 880 + i * 60);
-                if (line.type === 'warn') gundamAudio.playBeep(0, 660);
-                if (line.type === 'header' && line.text.includes('UNICORN')) gundamAudio.playOnlineChime(0);
             }, line.delay));
         });
 

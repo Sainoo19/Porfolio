@@ -32,7 +32,7 @@ export const PERSONAL_INFO: PersonalInfo = {
         },
         {
             platform: 'linkedin',
-            url: 'https://linkedin.com/in/nvtrung19',
+            url: 'https://www.linkedin.com/in/sainoo19',
             label: 'LinkedIn',
         },
         {
@@ -46,114 +46,141 @@ export const PERSONAL_INFO: PersonalInfo = {
 export const SKILLS: Skill[] = [
     { id: 'csharp', name: 'C#', category: 'language', proficiency: 90 },
     { id: 'java', name: 'Java', category: 'language', proficiency: 85 },
-    { id: 'javascript', name: 'JavaScript', category: 'language', proficiency: 88 },
-    { id: 'typescript', name: 'TypeScript', category: 'language', proficiency: 87 },
+    { id: 'javascript-ts', name: 'JavaScript / TypeScript', category: 'language', proficiency: 88 },
     { id: 'react', name: 'React', category: 'framework', proficiency: 90 },
-    { id: 'nodejs', name: 'Node.js', category: 'framework', proficiency: 82 },
-    { id: 'dotnet', name: '.NET Framework & Core', category: 'framework', proficiency: 88 },
+    { id: 'dotnet', name: '.NET Core', category: 'framework', proficiency: 88 },
+    { id: 'nodejs', name: 'Node.js / Express', category: 'framework', proficiency: 82 },
     { id: 'spring', name: 'Spring Boot', category: 'framework', proficiency: 80 },
-    { id: 'sql-server', name: 'SQL Server', category: 'database', proficiency: 85 },
-    { id: 'mysql', name: 'MySQL', category: 'database', proficiency: 82 },
-    { id: 'mongodb', name: 'MongoDB', category: 'database', proficiency: 78 },
-    { id: 'git', name: 'Git', category: 'tool', proficiency: 90 },
-    { id: 'azure-devops', name: 'Azure DevOps', category: 'tool', proficiency: 84 },
-    { id: 'jira', name: 'Jira', category: 'tool', proficiency: 86 },
-    { id: 'figma', name: 'Figma', category: 'tool', proficiency: 75 },
-    { id: 'lark-suite', name: 'Lark Suite', category: 'tool', proficiency: 80 },
-    { id: 'agile', name: 'Agile/Scrum', category: 'methodology', proficiency: 92 },
-    { id: 'clean-arch', name: 'Clean Architecture', category: 'methodology', proficiency: 85 },
-    { id: 'oop', name: 'OOP', category: 'methodology', proficiency: 90 },
-    { id: 'solid', name: 'SOLID Principles', category: 'methodology', proficiency: 88 },
-    { id: 'tdd', name: 'Test-Driven Development', category: 'methodology', proficiency: 80 },
-    { id: 'waterfall', name: 'Waterfall', category: 'methodology', proficiency: 82 },
-    { id: 'project-mgmt', name: 'Project Management', category: 'soft-skill', proficiency: 88 },
-    { id: 'business-analysis', name: 'Business Analysis', category: 'soft-skill', proficiency: 86 },
-    { id: 'stakeholder-comm', name: 'Stakeholder Communication', category: 'soft-skill', proficiency: 90 },
-    { id: 'risk-mgmt', name: 'Risk Management', category: 'soft-skill', proficiency: 84 },
-    { id: 'time-mgmt', name: 'Time Management', category: 'soft-skill', proficiency: 88 },
-    { id: 'problem-solving', name: 'Problem Solving', category: 'soft-skill', proficiency: 90 },
+    { id: 'databases', name: 'SQL Server / MySQL / MongoDB', category: 'database', proficiency: 85 },
+    { id: 'devops-tools', name: 'Azure DevOps / Jira / Git', category: 'tool', proficiency: 88 },
+    { id: 'workspace-tools', name: 'Lark Suite / Notion / Figma', category: 'tool', proficiency: 82 },
+    { id: 'project-lifecycles', name: 'Project Life Cycles & Development Approaches', category: 'methodology', proficiency: 90 },
+    { id: 'software-design', name: 'Software Architecture & Design Principles', category: 'methodology', proficiency: 86 },
+    { id: 'business-analysis', name: 'Business Analysis & Requirements Engineering', category: 'soft-skill', proficiency: 88 },
+    { id: 'project-coordination', name: 'Project Coordination & Stakeholder Communication', category: 'soft-skill', proficiency: 90 },
+    { id: 'risk-problem', name: 'Risk Mitigation & Problem Solving', category: 'soft-skill', proficiency: 88 },
 ];
 
 export const EXPERIENCES: Experience[] = [
     {
-        id: 'learning-chain',
-        company: 'Learning Chain',
-        position: 'ASSISTANT OPERATIONS DIRECTOR(Project Coordinator & Business Analyst)',
-        startDate: 'April 2025',
-        endDate: 'December 2025',
-        logo: LCLogo,
+        id: 'bb-stores',
+        company: 'BB Stores',
+        position: 'ASSISTANT CEO (PROJECT COORDINATOR & BUSINESS ANALYST)',
+        startDate: 'April 2026',
+        endDate: 'Now',
         responsibilities: [
-            'Coordinated project lifecycles for Web3 Blockchain and AI training programs, managing schedules and resource allocation',
-            'Acted as a liaison between Subject Matter Experts, Management, and Stakeholders to gather requirements',
-            'Managed quality assurance (QA) of technical content and documentation',
-            'Monitored project execution metrics and implemented mitigation strategies',
-            'Oversaw technical environment setup and resource readiness',
+            'Spearheaded the transition from manual, ad-hoc workflows (verbal communication, fragmented Google Sheets) to a highly structured operational model.',
+            'Championed Agile methodologies and built a centralized management system on Lark Suite (Lark Base) to coordinate cross-functional efforts across Marketing, Sales, and Media teams.',
+            'Completely resolved critical bottlenecks related to miscommunication and file loss caused by decentralized storage.',
+            'Streamlined and automated workflows, significantly reducing administrative bulkiness and improving seamless collaboration across departments.',
+            'Closely tracked project lifecycles and managed resources to ensure products were delivered on time, in the correct quantities, and up to quality standards.',
         ],
         achievements: [
             {
-                title: 'Process Standardization & Improvement',
-                description: 'Spearheaded transition from ad-hoc workflows to structured Agile framework with 100% task visibility',
+                title: 'Digital Transformation & Agile Implementation',
+                description: 'Transitioned from manual workflows to a structured operational model. Built a centralized management system on Lark Suite.',
             },
             {
-                title: 'Tools Optimization & Automation',
-                description: 'Championed Lark Suite adoption and developed internal website for centralizing training resources',
+                title: 'Operational Efficiency & Workflow Automation',
+                description: 'Resolved bottlenecks related to miscommunication and file loss. Streamlined workflows to reduce administrative bulkiness.',
             },
+            {
+                title: 'Product Delivery & Revenue Impact',
+                description: 'Contributed to stable operations and business revenue generation by maintaining a frictionless operational flow.',
+            }
         ],
-        technologies: ['Agile', 'Lark Suite', 'Web Development'],
+        technologies: ['Agile', 'Lark Suite', 'Project Management'],
+    },
+    {
+        id: 'learning-chain',
+        company: 'Learning Chain',
+        position: 'PROJECT COORDINATOR & BUSINESS ANALYST',
+        startDate: 'July 2025',
+        endDate: 'December 2025',
+        logo: LCLogo,
+        responsibilities: [
+            'Led end-to-end coordination for Blockchain and AI training programs, acting as the primary liaison among SMEs and stakeholders.',
+            'Applied Work Breakdown Structure (WBS) to translate high-level objectives into granular tasks and managed cross-platform schedules.',
+            'Facilitated daily stand-ups and authored comprehensive reports to evaluate performance against OKRs and KPIs.',
+            'Proactively monitored execution metrics and implemented mitigation strategies, achieving 100% alignment with project goals.',
+        ],
+        achievements: [
+            {
+                title: 'Agile Project Leadership',
+                description: 'Successfully transitioned the team from ad-hoc workflows to structured Agile/Scrum, boosting overall productivity by 30% in the first quarter.',
+            },
+            {
+                title: 'Operational Optimization & Delivery',
+                description: 'Developed 10+ standardized protocols that reduced session preparation time by 45% (from 4 hours to ~2 hours) with zero critical errors across 50+ live sessions.',
+            },
+            {
+                title: 'Workspace Digitalization & System Building',
+                description: 'Championed Lark Suite and Notion adoption (100% migration in 2 weeks). Engineered a mini-ERP system centralizing 300+ assets, cutting lookup time by 60%.',
+            }
+        ],
+        technologies: ['Agile/Scrum', 'Lark Suite', 'Notion', 'WBS', 'OKRs/KPIs'],
     },
     {
         id: 'nashtech',
         company: 'NashTech',
-        position: 'Software Engineering / PM Assistant',
-        startDate: 'March 2024',
-        endDate: 'March 2025',
+        position: 'SOFTWARE ENGINEERING / BUSINESS ANALYST ASSISTANT',
+        startDate: 'March 2025',
+        endDate: 'June 2025',
         logo: NashLogo,
         responsibilities: [
-            'Served as both Developer and Assistant PM for training projects (TCG Shop, Asset Management)',
-            'Led Agile/Scrum workflows, managed backlog refinement using Azure DevOps',
-            'Engineered full-stack solutions using .NET Core with Clean Architecture pattern',
-            'Built responsive front-end interfaces with React Vite',
-            'Transitioned to real-world "Zenfolio" project in production environment',
+            'Served as both Developer and Project Manager Assistant for training projects (TCG Shop, Asset Management).',
+            'Led Agile/Scrum workflows, managed backlog refinement, and tracked sprint progress via Azure DevOps.',
+            'Engineered robust full-stack solutions utilizing .NET Core within a Clean Architecture, SQL Server backend, and React Vite frontend.',
+            'Collaborated effectively across specialized roles in the software team.',
         ],
         achievements: [
             {
-                title: 'Professional Insight',
-                description: 'Gained hands-on experience in production environment with professional problem-solving mindsets',
+                title: 'Dual-Role Execution & Agile Management',
+                description: 'Effectively tailored Agile/Scrum and Waterfall methodologies to specific project contexts to ensure timely delivery.',
             },
             {
-                title: 'Methodology Understanding',
-                description: 'Developed practical view of Agile/Scrum and Waterfall methodologies',
-            },
+                title: 'Technical Engineering & Code Quality',
+                description: 'Ensured high code quality through comprehensive xUnit testing while gaining hands-on production experience and sharpening problem-solving skills.',
+            }
         ],
-        technologies: ['.NET Core', 'React', 'SQL Server', 'Azure DevOps', 'xUnit'],
+        technologies: ['.NET Core', 'React Vite', 'SQL Server', 'Azure DevOps', 'xUnit', 'Clean Architecture'],
     },
     {
         id: 'vlu-ta',
         company: 'Van Lang University',
-        position: 'Teaching Assistant - Basic Programming Course',
+        position: 'TEACHING ASSISTANT FOR A BASIC PROGRAM COURSE',
         startDate: 'September 2022',
         endDate: 'September 2023',
         logo: VLULogo,
         responsibilities: [
-            'Assisted lecturer in delivering course content through programming exercises',
-            'Provided personalized support to students on fundamental programming principles',
-            'Helped prepare learning materials and coding examples',
-            'Facilitated smooth class operations by coordinating communication',
+            'Acted as the primary liaison between the lecturer and 40+ students.',
+            'Managed daily logistics, tracked performance metrics, and delivered timely progress reports to facilitate early interventions.',
+            'Mentored students on technical concepts.',
+            'Standardized course materials/guidelines.',
         ],
-        achievements: [],
-        technologies: ['Programming Fundamentals', 'Teaching'],
+        achievements: [
+            {
+                title: 'Operational Coordination & Progress Tracking',
+                description: 'Effectively tracked progress and delivered reports to facilitate early interventions for students.',
+            },
+            {
+                title: 'Mentorship & Documentation Management',
+                description: 'Significantly optimized the training workflow and reduced the lead lecturer\'s workload through standardized documentation.',
+            }
+        ],
+        technologies: ['Mentorship', 'Progress Tracking', 'Documentation'],
     },
 ];
 
 export const PROJECTS: Project[] = [
     {
         id: 'amazing-group',
-        title: 'English Language Center Management Website - ERP System',
-        role: 'Business Analyst - Freelance Remote',
-        description: 'A comprehensive ERP system for managing English language centers. Gathered requirements, coordinated development, and implemented Agile workflows.', // [cite: 34, 40, 42]
+        title: 'English Language Center Management Website - AMAZING GROUP',
+        role: 'BUSINESS ANALYST - FREELANCE',
+        description: 'Spearheaded digital transformation by designing a centralized management website to replace fragmented Excel/Google Sheets workflows, preventing data loss and optimizing internal operations.',
         teamSize: 6,
         startDate: 'January 2026',
-        endDate: 'Present',
+        endDate: 'March 2026',
         techStack: {
             landingpage: ['WordPress'],
             frontend: ['React Vite', 'React'],
@@ -166,49 +193,11 @@ export const PROJECTS: Project[] = [
 
         },
         highlights: [
-            'Spearheaded the transition to a structured Agile framework', // Thành tựu process
-            'Developed an internal website to centralize training resources', // Thành tựu kỹ thuật
-            'Coordinated project lifecycles for Web3 & AI training programs',
-            'Source code / Internal tools are protected by NDA', // Ghi chú bảo mật
-        ],
-    },
-    {
-        id: 'zenfolio',
-        title: 'Zenfolio (NashTech)',
-        role: 'Full-stack Developer',
-        description: 'A professional photography platform. Collaborated with the engineering team to apply modern technologies in a production environment.',
-        teamSize: 8,
-        startDate: 'July 2024',
-        endDate: 'March 2025',
-        techStack: {
-            landingpage: ["WordPress", "Elementor"],
-            frontend: {
-                core: ["React Vite", "TypeScript"],
-                stateManagement: ["Zustand", "Redux Toolkit"],
-                dragAndDrop: ["dnd-kit", "React-beautiful-dnd"],
-                styling: ["Tailwind CSS", "Styled Components"]
-            },
-            backend: {
-                framework: [".NET 8 Core"],
-                architecture: ["Clean Architecture", "CQRS", "Microservices (Optional)"],
-                api: ["RESTful API", "GraphQL (for Dynamic Queries)"],
-                mediaProcessing: ["Azure Functions", "ImageMagick", "CDN (Azure Front Door)"]
-            },
-            database: {
-                relational: ["SQL Server (User, Orders, Subscriptions)"],
-                document: ["MongoDB or CosmosDB (Storing Web Layouts/JSON Config)"],
-                cache: ["Redis (Caching Website Previews)"]
-            },
-            tools: ["Azure DevOps", "xUnit", "Docker & Kubernetes", "Terraform (IaC)"]
-        },
-        links: {
-            demo: 'https://zenfolio.com/',
-        },
-        highlights: [
-            'Engineered robust full-stack solutions using Clean Architecture',
-            'Ensured code reliability through comprehensive unit testing with xUnit',
-            'Worked in a professional Agile/Scrum production environment',
-            'Proprietary Source Code (NDA Signed)',
+            'Optimized system architecture and workflows through competitor analysis and detailed mapping of complex academic processes.',
+            'Defined core modules including scheduling, attendance tracking, performance evaluations, homework management, HR timesheets, and tuition collection.',
+            'Authored comprehensive technical and business documentation.',
+            'Bridged business and technical teams by overseeing feature implementation and providing hands-on coding support during critical sprints.',
+            'Ensured all project milestones were delivered on time.',
         ],
     },
     {
